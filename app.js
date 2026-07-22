@@ -7,7 +7,8 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "prato-do-dia:v2";
+  const STORAGE_KEY = "prato-do-dia:v3";
+  const STORAGE_KEY_V2 = "prato-do-dia:v2"; // versão anterior — só para migração (não é apagada)
   const UI_THEME_KEY = "prato-do-dia:ui-theme";
   const HISTORY_KEY = "prato-do-dia:history:v1";
   const DEFAULT_INCLUDES = "Sopa · Pão · Bebida · Café · Prato à escolha";
@@ -22,13 +23,11 @@
     { id: "horta", label: "Horta", color: "#2f6b43" },
   ];
 
-  function defaultState() {
+  // Definições globais por omissão (sem soup/dishes/date — isso vive no histórico)
+  function defaultSettings() {
     return {
       restaurant: "",
       tagline: "",
-      date: todayISO(),
-      soup: "",
-      dishes: ["", "", ""], // pratos disponíveis (nº variável)
       price: "",
       includes: DEFAULT_INCLUDES,
       footer: "Bom apetite!",
@@ -36,7 +35,91 @@
     };
   }
 
-  let state = migrate(load()) || defaultState();
+  // Garante que as definições têm sempre os campos esperados e tipos corretos
+  function sanitizeSettings(s) {
+    const d = defaultSettings();
+    if (!s || typeof s !== "object") return d;
+    return {
+      restaurant: typeof s.restaurant === "string" ? s.restaurant : d.restaurant,
+      tagline: typeof s.tagline === "string" ? s.tagline : d.tagline,
+      price: typeof s.price === "string" ? s.price : d.price,
+      includes: typeof s.includes === "string" && s.includes ? s.includes : d.includes,
+      footer: typeof s.footer === "string" ? s.footer : d.footer,
+      theme: THEMES.some((t) => t.id === s.theme) ? s.theme : d.theme,
+    };
+  }
+
+  function extractSettings(s) {
+    return {
+      restaurant: s.restaurant,
+      tagline: s.tagline,
+      price: s.price,
+      includes: s.includes,
+      footer: s.footer,
+      theme: s.theme,
+    };
+  }
+
+  // Carrega as definições v3; se não existirem, migra a partir de v2 (uma vez)
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const data = raw ? JSON.parse(raw) : null;
+      if (data && data.settings && typeof data.settings === "object") {
+        return sanitizeSettings(data.settings);
+      }
+    } catch (e) {
+      /* ignora e tenta migração */
+    }
+
+    // Migração de v2 → v3 (só quando v3 ainda não existe)
+    try {
+      const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
+      const v2 = rawV2 ? JSON.parse(rawV2) : null;
+      if (v2) {
+        const settings = sanitizeSettings({
+          restaurant: v2.restaurant,
+          tagline: v2.tagline,
+          price: v2.price,
+          includes: v2.includes,
+          footer: v2.footer,
+          theme: v2.theme,
+        });
+        // Garante que o conteúdo do dia do v2 fica no histórico (sem sobrepor um dia já existente)
+        if (v2.date) {
+          const history = loadHistory();
+          if (!history.days[v2.date]) {
+            const soup = String(v2.soup || "").trim();
+            const dishes = Array.isArray(v2.dishes) ? v2.dishes.map((d) => String(d || "").trim()).filter((d) => d) : [];
+            if (soup || dishes.length > 0) {
+              history.days[v2.date] = { soup: soup, dishes: dishes };
+              localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            }
+          }
+        }
+        return settings;
+      }
+    } catch (e) {
+      /* ignora e usa omissões */
+    }
+
+    return defaultSettings();
+  }
+
+  // Monta o estado inicial: definições (v3, com migração de v2 se necessário) + dia de hoje do histórico
+  function buildInitialState() {
+    const settings = loadSettings();
+    const date = todayISO();
+    const history = loadHistory();
+    const day = history.days[date];
+    return Object.assign({}, settings, {
+      date: date,
+      soup: day ? day.soup || "" : "",
+      dishes: day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""],
+    });
+  }
+
+  let state = buildInitialState();
 
   /* ---------------- Utilidades ---------------- */
   function todayISO() {
@@ -63,34 +146,15 @@
       .replace(/"/g, "&quot;"); // também usado em atributos (value="…")
   }
 
+  // Grava as definições globais (v3) e o conteúdo do dia atual (histórico)
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ settings: extractSettings(state) }));
     } catch (e) {
       /* localStorage indisponível — ignora */
     }
     saveHistory();
     rebuildSuggestions();
-  }
-
-  function load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // Garante que dados guardados têm sempre os campos esperados
-  function migrate(s) {
-    if (!s) return null;
-    if (!Array.isArray(s.dishes)) s.dishes = ["", "", ""];
-    if (typeof s.includes !== "string" || !s.includes) s.includes = DEFAULT_INCLUDES;
-    if (typeof s.soup !== "string") s.soup = "";
-    // temas antigos → novos
-    if (!THEMES.some((t) => t.id === s.theme)) s.theme = "azulejo";
-    return s;
   }
 
   /* ---------------- Histórico de menus (p/ "copiar de ontem" e sugestões) ---------------- */
@@ -133,6 +197,9 @@
     restaurant: document.getElementById("in-restaurant"),
     tagline: document.getElementById("in-tagline"),
     date: document.getElementById("in-date"),
+    btnDatePrev: document.getElementById("btn-date-prev"),
+    btnDateNext: document.getElementById("btn-date-next"),
+    btnDateToday: document.getElementById("btn-date-today"),
     soup: document.getElementById("in-soup"),
     price: document.getElementById("in-price"),
     includes: document.getElementById("in-includes"),
@@ -157,6 +224,9 @@
     modalDownload: document.getElementById("pd-modal-download"),
     modalPrint: document.getElementById("pd-modal-print"),
     fitWarning: document.getElementById("fit-warning"),
+    btnExport: document.getElementById("btn-export"),
+    btnImport: document.getElementById("btn-import"),
+    inImport: document.getElementById("in-import"),
   };
 
   /* ---------------- Preencher o editor ---------------- */
@@ -387,7 +457,6 @@
     const map = [
       ["restaurant", el.restaurant],
       ["tagline", el.tagline],
-      ["date", el.date],
       ["soup", el.soup],
       ["price", el.price],
       ["includes", el.includes],
@@ -401,6 +470,31 @@
     });
   }
 
+  /* ---------------- Navegação entre dias ---------------- */
+  // Soma (ou subtrai) dias a uma data ISO, respeitando o fuso horário local
+  function addDays(iso, delta) {
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + delta);
+    const off = dt.getTimezoneOffset();
+    return new Date(dt.getTime() - off * 60000).toISOString().slice(0, 10);
+  }
+
+  // Muda o dia selecionado: o conteúdo do dia anterior já ficou persistido
+  // (o save() corre a cada alteração), por isso basta carregar o novo dia.
+  function switchDay(newDate) {
+    if (!newDate || newDate === state.date) return;
+    state.date = newDate;
+    const history = loadHistory();
+    const day = history.days[state.date];
+    state.soup = day ? day.soup || "" : "";
+    state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
+    el.date.value = state.date;
+    el.soup.value = state.soup;
+    renderDishes();
+    onChange(false);
+  }
+
   /* ---------------- Ações ---------------- */
   el.addDish.addEventListener("click", () => {
     state.dishes.push("");
@@ -409,6 +503,18 @@
   });
 
   el.btnPrint.addEventListener("click", printMenu);
+
+  // A data usa "change" (não "input") para não disparar com datas parciais escritas à mão
+  el.date.addEventListener("change", () => {
+    if (!el.date.value) {
+      el.date.value = state.date;
+      return;
+    }
+    switchDay(el.date.value);
+  });
+  el.btnDatePrev.addEventListener("click", () => switchDay(addDays(state.date, -1)));
+  el.btnDateNext.addEventListener("click", () => switchDay(addDays(state.date, 1)));
+  el.btnDateToday.addEventListener("click", () => switchDay(todayISO()));
 
   // Copia a sopa e os pratos do menu guardado mais recente anterior à data atual
   el.btnCopyPrev.addEventListener("click", () => {
@@ -431,10 +537,9 @@
   });
 
   el.btnClear.addEventListener("click", () => {
-    const snapshot = { soup: state.soup, dishes: state.dishes.slice(), date: state.date };
+    const snapshot = { soup: state.soup, dishes: state.dishes.slice() };
     state.soup = "";
     state.dishes = ["", "", ""];
-    state.date = todayISO();
     fillEditor();
     onChange(false);
     toast("Dia limpo.", {
@@ -442,7 +547,6 @@
       onClick: function () {
         state.soup = snapshot.soup;
         state.dishes = snapshot.dishes;
-        state.date = snapshot.date;
         fillEditor();
         onChange(false);
       },
@@ -604,6 +708,106 @@
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
     return `${base}-${state.date || todayISO()}.png`;
+  }
+
+  /* ============================================================
+     Cópia de segurança — exportar / importar JSON
+     ============================================================ */
+
+  // Aplica um conjunto de definições + histórico completo ao estado atual
+  // e ao localStorage (usado tanto na importação como no "Anular" dela).
+  function applyBackup(settings, days) {
+    Object.assign(state, settings);
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify({ days: days }));
+    } catch (e) {
+      /* localStorage indisponível — ignora */
+    }
+    const day = days[state.date];
+    state.soup = day ? day.soup || "" : "";
+    state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
+    fillEditor();
+    onChange(false);
+  }
+
+  el.btnExport.addEventListener("click", () => {
+    try {
+      const history = loadHistory();
+      const data = {
+        app: "prato-do-dia",
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        settings: extractSettings(state),
+        days: history.days,
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `prato-do-dia-backup-${todayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast(RESTRICTED_MSG);
+    }
+  });
+
+  el.btnImport.addEventListener("click", () => {
+    el.inImport.click();
+  });
+
+  el.inImport.addEventListener("change", () => {
+    const file = el.inImport.files && el.inImport.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      importBackup(String(reader.result || ""));
+      el.inImport.value = ""; // permite reimportar o mesmo ficheiro
+    };
+    reader.onerror = () => {
+      toast("Ficheiro inválido — exporta primeiro uma cópia a partir da app.");
+      el.inImport.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  function importBackup(text) {
+    let obj;
+    try {
+      obj = JSON.parse(text);
+    } catch (e) {
+      toast("Ficheiro inválido — exporta primeiro uma cópia a partir da app.");
+      return;
+    }
+    if (!obj || obj.app !== "prato-do-dia" || !obj.days || typeof obj.days !== "object" || !obj.settings || typeof obj.settings !== "object") {
+      toast("Ficheiro inválido — exporta primeiro uma cópia a partir da app.");
+      return;
+    }
+
+    const previousHistory = loadHistory();
+    const snapshot = { settings: extractSettings(state), days: previousHistory.days };
+
+    const newSettings = sanitizeSettings(obj.settings);
+    const newDays = {};
+    Object.keys(obj.days).forEach((date) => {
+      const day = obj.days[date];
+      if (!day) return;
+      const soup = typeof day.soup === "string" ? day.soup.trim() : "";
+      const dishes = Array.isArray(day.dishes) ? day.dishes.map((d) => String(d || "").trim()).filter((d) => d) : [];
+      if (soup || dishes.length > 0) {
+        newDays[date] = { soup: soup, dishes: dishes };
+      }
+    });
+
+    applyBackup(newSettings, newDays);
+    toast("Dados importados.", {
+      label: "Anular",
+      onClick: function () {
+        applyBackup(snapshot.settings, snapshot.days);
+      },
+    });
   }
 
   /* ---------------- Arranque ---------------- */

@@ -40,6 +40,17 @@
     <!-- ============ EDITOR ============ -->
     <section class="editor no-print" aria-label="Editor do menu">
       <div class="card">
+        <h2 class="card__title">Dia</h2>
+        <p class="card__hint">Cada dia guarda o seu menu — muda a data para preparar outro dia.</p>
+        <div class="date-nav">
+          <button id="btn-date-prev" class="btn btn--ghost btn--small" type="button" title="Dia anterior" aria-label="Dia anterior">‹</button>
+          <input id="in-date" type="date" aria-label="Data do menu" />
+          <button id="btn-date-next" class="btn btn--ghost btn--small" type="button" title="Dia seguinte" aria-label="Dia seguinte">›</button>
+          <button id="btn-date-today" class="btn btn--ghost btn--small" type="button">Hoje</button>
+        </div>
+      </div>
+
+      <div class="card">
         <h2 class="card__title">Restaurante</h2>
         <p class="card__hint">Só é preciso na primeira vez — fica guardado.</p>
         <label class="field">
@@ -49,10 +60,6 @@
         <label class="field">
           <span>Frase / subtítulo (opcional)</span>
           <input id="in-tagline" type="text" placeholder="Ex.: Cozinha caseira desde 1985" />
-        </label>
-        <label class="field">
-          <span>Data</span>
-          <input id="in-date" type="date" />
         </label>
       </div>
 
@@ -97,6 +104,16 @@
         <div class="field">
           <span>Tema do menu</span>
           <div id="themes" class="themes"><!-- temas injetados por JS --></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card__title">Cópia de segurança</h2>
+        <p class="card__hint">Guarda ou repõe todos os dados — definições e os menus de todos os dias.</p>
+        <div class="backup-actions">
+          <button id="btn-export" class="btn" type="button">⬇️ Exportar dados</button>
+          <button id="btn-import" class="btn" type="button">⬆️ Importar dados</button>
+          <input id="in-import" type="file" accept=".json,application/json" hidden />
         </div>
       </div>
     </section>

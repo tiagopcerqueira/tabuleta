@@ -201,6 +201,13 @@ html, body {
   border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
+.date-nav { display: flex; align-items: center; gap: 8px; }
+.date-nav input { flex: 1; }
+#btn-date-prev, #btn-date-next { font-size: 17px; line-height: 1; padding: 6px 12px; }
+
+.backup-actions { display: flex; gap: 10px; }
+.backup-actions .btn { flex: 1; }
+
 .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
 .field:last-child { margin-bottom: 0; }
 .field > span { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.2px; }

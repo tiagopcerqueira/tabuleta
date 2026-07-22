@@ -17,6 +17,7 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 
 1. Abre o ficheiro **`index.html`** (basta fazer duplo clique — abre no navegador).
 2. À esquerda, escreve o dia:
+   - **Dia** — cada data guarda o seu menu. Usa **‹ ›** ou o botão **Hoje** para navegar; podes preparar o menu de amanhã sem perder o de hoje.
    - Nome do restaurante e frase (só é preciso na primeira vez — fica guardado).
    - **Sopa do dia**.
    - **Pratos disponíveis** — uma lista simples. Adiciona com **＋** (ou carrega em **Enter** num prato para criar o seguinte), reordena com **▲▼** e remove com **✕**. Enquanto escreves, a app sugere pratos e sopas de dias anteriores.
@@ -31,7 +32,9 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 ## Funcionalidades
 
 - ✅ Interface intuitiva, toda em português. Só se escreve a sopa e os pratos.
-- ✅ **Histórico dos últimos 60 dias** com botão "📋 Copiar de ontem".
+- ✅ **Um menu por data** — a app abre sempre no dia de hoje e cada dia guarda o seu menu (últimos 60 dias).
+- ✅ Botão "📋 Copiar de ontem" para recuperar o último menu guardado.
+- ✅ **Cópia de segurança** — exporta e importa todos os dados num ficheiro JSON.
 - ✅ **Sugestões automáticas** de pratos e sopas já usados, enquanto se escreve.
 - ✅ Reordenar pratos com ▲▼ e "Limpar dia" com opção de **Anular**.
 - ✅ Aviso quando há pratos a mais e o texto do menu ficaria pequeno.
