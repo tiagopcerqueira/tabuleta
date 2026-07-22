@@ -21,6 +21,10 @@
     { id: "linho", label: "Linho", color: "#4a5a3c" },
     { id: "ardosia", label: "Ardósia", color: "#232a2d" },
     { id: "horta", label: "Horta", color: "#2f6b43" },
+    { id: "mar", label: "Mar", color: "#0e6673" },
+    { id: "vinho", label: "Vinho", color: "#7c2438" },
+    { id: "cafe", label: "Café", color: "#6f4a2a" },
+    { id: "papel", label: "Papel", color: "#1d1d1b" },
   ];
 
   // Definições globais por omissão (sem soup/dishes/date — isso vive no histórico)

@@ -41,7 +41,7 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 - ✅ Design "Azulejo" com tipografia Fraunces (incluída, funciona offline).
 - ✅ Pré-visualização instantânea do menu.
 - ✅ **Encaixe automático numa folha A4** — o espaçamento adapta-se a qualquer número de pratos.
-- ✅ 4 temas visuais para o menu (Azulejo, Linho, Ardósia, Horta).
+- ✅ 8 temas visuais para o menu (Azulejo, Linho, Ardósia, Horta, Mar, Vinho, Café, Papel).
 - ✅ Modo claro/escuro na própria app (botão 🌙 / ☀️).
 - ✅ Data automática, escrita por extenso ("Quarta-feira, 22 de julho de 2026").
 - ✅ Impressão em A4 e exportação para PDF.
