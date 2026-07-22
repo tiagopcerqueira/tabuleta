@@ -48,11 +48,19 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 - ✅ Exportação para imagem PNG para partilhar.
 - ✅ Guarda tudo automaticamente no navegador (não perde o trabalho ao fechar).
 - ✅ Funciona offline, sem instalação nem servidor.
+- ✅ **PWA** — quando alojada online (https), instala-se no telemóvel/tablet como uma app, com ícone próprio e offline garantido.
 
 ## Dica: pôr no telemóvel/tablet do restaurante
 
-Copia a pasta para o dispositivo e abre o `index.html` no navegador. Podes adicionar
-a página aos favoritos ou ao ecrã inicial para abrir com um toque.
+A melhor forma é alojar a pasta online (por exemplo, GitHub Pages — é grátis) e abrir
+o endereço no dispositivo: o navegador oferece **"Instalar aplicação"** e a app fica
+no ecrã inicial com ícone próprio, a funcionar mesmo sem internet.
+
+Em alternativa, copia a pasta para o dispositivo e abre o `index.html` no navegador
+(sem instalação, mas também funciona).
+
+> Nota técnica: a instalação e o offline via service worker exigem `https://` ou
+> `localhost` — em `file://` a app funciona normalmente, só não é instalável.
 
 ## Estrutura do projeto
 
@@ -60,8 +68,11 @@ a página aos favoritos ou ao ecrã inicial para abrir com um toque.
 index.html                 → página principal (editor + pré-visualização)
 styles.css                 → estilos da app e do template do menu (incl. impressão A4)
 app.js                     → lógica: editor, pré-visualização, gravação, exportação
+manifest.json              → manifesto PWA (nome, ícones, cores de instalação)
+sw.js                      → service worker: pré-carrega tudo para funcionar offline
 assets/html2canvas.min.js  → biblioteca para gerar a imagem PNG (incluída, offline)
 assets/fonts/*.woff2       → tipografia Fraunces (incluída, funciona offline)
+assets/icons/*.png         → ícones da app instalada (192, 512 e maskable)
 ```
 
 ## Notas técnicas

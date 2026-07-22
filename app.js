@@ -826,4 +826,12 @@
   renderMenu();
   // Reajusta se a janela mudar de tamanho (o A4 pode ser escalado no ecrã)
   window.addEventListener("resize", autoFit);
+
+  // PWA: funciona offline e pode ser instalada no ecrã inicial.
+  // Só é possível em https:// ou localhost — em file:// o registo falha e ignora-se.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
 })();
