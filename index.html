@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prato do Dia — Gerador de Menu</title>
+  <meta name="description" content="Escreve os pratos do dia e gera um menu bonito para mostrar aos clientes." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ BARRA SUPERIOR ============ -->
+  <header class="topbar no-print">
+    <div class="topbar__brand">
+      <span class="topbar__logo">🍲</span>
+      <div>
+        <h1>Prato do Dia</h1>
+        <p>Escreve os pratos e gera o menu para os clientes</p>
+      </div>
+    </div>
+    <div class="topbar__actions">
+      <button id="btn-print" class="btn btn--primary" type="button">🖨️ Imprimir / PDF</button>
+      <button id="btn-image" class="btn" type="button">🖼️ Guardar imagem</button>
+      <button id="btn-clear" class="btn btn--ghost" type="button">🧹 Limpar dia</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============ EDITOR ============ -->
+    <section class="editor no-print" aria-label="Editor do menu">
+      <div class="card">
+        <h2 class="card__title">Restaurante</h2>
+        <label class="field">
+          <span>Nome do restaurante</span>
+          <input id="in-restaurant" type="text" placeholder="Ex.: Tasca do Manel" />
+        </label>
+        <label class="field">
+          <span>Frase / subtítulo (opcional)</span>
+          <input id="in-tagline" type="text" placeholder="Ex.: Cozinha caseira desde 1985" />
+        </label>
+        <label class="field">
+          <span>Data</span>
+          <input id="in-date" type="date" />
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="card__title">Sopa</h2>
+        </div>
+        <label class="field">
+          <input id="in-soup" type="text" placeholder="Ex.: Sopa de legumes" />
+        </label>
+      </div>
+
+      <div class="card" id="sections-card">
+        <div class="card__head">
+          <h2 class="card__title">Pratos do dia</h2>
+        </div>
+        <div id="sections"><!-- secções de pratos injetadas por JS --></div>
+        <button id="btn-add-section" class="btn btn--dashed" type="button">＋ Adicionar categoria</button>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="card__title">Sobremesa</h2>
+        </div>
+        <label class="field">
+          <input id="in-dessert" type="text" placeholder="Ex.: Arroz doce / Fruta da época" />
+        </label>
+      </div>
+
+      <div class="card">
+        <h2 class="card__title">Preço &amp; extras</h2>
+        <div class="field-row">
+          <label class="field">
+            <span>Preço do menu</span>
+            <input id="in-price" type="text" placeholder="Ex.: 9,50 €" />
+          </label>
+          <label class="field">
+            <span>Inclui</span>
+            <input id="in-includes" type="text" placeholder="Ex.: Sopa + Prato + Café" />
+          </label>
+        </div>
+        <label class="field">
+          <span>Nota de rodapé (opcional)</span>
+          <input id="in-footer" type="text" placeholder="Ex.: Bom apetite! Aceitamos take-away." />
+        </label>
+      </div>
+
+      <div class="card">
+        <h2 class="card__title">Aparência</h2>
+        <div class="field">
+          <span>Tema do menu</span>
+          <div id="themes" class="themes"><!-- temas injetados por JS --></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRÉ-VISUALIZAÇÃO ============ -->
+    <section class="preview" aria-label="Pré-visualização do menu">
+      <div class="preview__hint no-print">Pré-visualização — assim vai ficar impresso 👇</div>
+      <div id="menu-wrap" class="menu-wrap">
+        <article id="menu" class="menu" data-theme="taberna">
+          <!-- render por JS -->
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/html2canvas.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
