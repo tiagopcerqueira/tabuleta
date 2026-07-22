@@ -6,15 +6,22 @@ imprimir, exportar em PDF ou partilhar como imagem.
 
 Feita para ser fácil de usar por qualquer pessoa, sem instalação e **sem precisar de internet**.
 
+## Como funciona
+
+O **Prato do Dia** inclui sempre: **sopa, pão, bebida, café e um prato à escolha**.
+O utilizador só precisa de escrever **a sopa** e a **lista de pratos disponíveis** nesse dia
+(podem ser 4, 5 ou 10+). O template encaixa tudo **numa única folha A4** e **ajusta o
+espaçamento e o tamanho do texto** automaticamente conforme o número de pratos.
+
 ## Como usar
 
 1. Abre o ficheiro **`index.html`** (basta fazer duplo clique — abre no navegador).
-2. À esquerda, escreve os pratos do dia:
+2. À esquerda, escreve o dia:
    - Nome do restaurante e frase (só é preciso na primeira vez — fica guardado).
-   - Sopa, pratos por categoria (Carne, Peixe, …), sobremesa e preço.
-   - Podes adicionar/remover categorias e pratos com os botões **＋** e **✕**.
-   - Clica no emoji de uma categoria para o trocar.
-3. À direita vês a **pré-visualização em tempo real** de como o menu vai ficar.
+   - **Sopa do dia**.
+   - **Pratos disponíveis** — uma lista simples. Adiciona com **＋** (ou carrega em **Enter** num prato para criar o seguinte) e remove com **✕**.
+   - Preço do menu (opcional).
+3. À direita vês a **pré-visualização em tempo real** de como o menu vai ficar na folha A4.
 4. Quando estiver pronto, usa os botões no topo:
    - **🖨️ Imprimir / PDF** — imprime em A4 ou guarda como PDF (no diálogo de impressão, escolhe "Guardar como PDF").
    - **🖼️ Guardar imagem** — descarrega o menu em PNG, ideal para enviar no WhatsApp ou pôr nas redes sociais.
@@ -22,10 +29,10 @@ Feita para ser fácil de usar por qualquer pessoa, sem instalação e **sem prec
 
 ## Funcionalidades
 
-- ✅ Interface intuitiva, toda em português.
+- ✅ Interface intuitiva, toda em português. Só se escreve a sopa e os pratos.
 - ✅ Pré-visualização instantânea do menu.
+- ✅ **Encaixe automático numa folha A4** — o espaçamento adapta-se a qualquer número de pratos.
 - ✅ 4 temas visuais (Taberna, Moderno, Mar, Rústico).
-- ✅ Categorias e pratos flexíveis, com preço opcional por prato.
 - ✅ Data automática, escrita por extenso ("Quarta-feira, 22 de julho de 2026").
 - ✅ Impressão em A4 e exportação para PDF.
 - ✅ Exportação para imagem PNG para partilhar.

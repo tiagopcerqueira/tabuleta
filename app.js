@@ -1,12 +1,14 @@
 /* ============================================================
    Prato do Dia — lógica da aplicação
-   App estática, sem dependências. Guarda no navegador (localStorage).
+   App estática, sem dependências (exceto html2canvas p/ imagem).
+   Guarda no navegador (localStorage). Funciona offline.
    ============================================================ */
 
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "prato-do-dia:v1";
+  const STORAGE_KEY = "prato-do-dia:v2";
+  const DEFAULT_INCLUDES = "Sopa · Pão · Bebida · Café · Prato à escolha";
 
   const THEMES = [
     { id: "taberna", label: "Taberna", color: "#7a1f1f" },
@@ -15,26 +17,21 @@
     { id: "rustico", label: "Rústico", color: "#e0a458" },
   ];
 
-  // Estado inicial por omissão (estrutura clássica de tasca)
   function defaultState() {
     return {
       restaurant: "",
       tagline: "",
       date: todayISO(),
       soup: "",
-      sections: [
-        { icon: "🥩", title: "Carne", dishes: [{ name: "", price: "" }] },
-        { icon: "🐟", title: "Peixe", dishes: [{ name: "", price: "" }] },
-      ],
-      dessert: "",
+      dishes: ["", "", ""], // pratos disponíveis (nº variável)
       price: "",
-      includes: "",
+      includes: DEFAULT_INCLUDES,
       footer: "Bom apetite!",
       theme: "taberna",
     };
   }
 
-  let state = load() || defaultState();
+  let state = migrate(load()) || defaultState();
 
   /* ---------------- Utilidades ---------------- */
   function todayISO() {
@@ -77,20 +74,29 @@
     }
   }
 
+  // Garante que dados guardados têm sempre os campos esperados
+  function migrate(s) {
+    if (!s) return null;
+    if (!Array.isArray(s.dishes)) s.dishes = ["", "", ""];
+    if (typeof s.includes !== "string" || !s.includes) s.includes = DEFAULT_INCLUDES;
+    if (typeof s.soup !== "string") s.soup = "";
+    return s;
+  }
+
   /* ---------------- Referências ao DOM ---------------- */
   const el = {
     restaurant: document.getElementById("in-restaurant"),
     tagline: document.getElementById("in-tagline"),
     date: document.getElementById("in-date"),
     soup: document.getElementById("in-soup"),
-    dessert: document.getElementById("in-dessert"),
     price: document.getElementById("in-price"),
     includes: document.getElementById("in-includes"),
     footer: document.getElementById("in-footer"),
-    sections: document.getElementById("sections"),
+    dishes: document.getElementById("dishes"),
+    dishCount: document.getElementById("dish-count"),
     themes: document.getElementById("themes"),
     menu: document.getElementById("menu"),
-    addSection: document.getElementById("btn-add-section"),
+    addDish: document.getElementById("btn-add-dish"),
     btnPrint: document.getElementById("btn-print"),
     btnImage: document.getElementById("btn-image"),
     btnClear: document.getElementById("btn-clear"),
@@ -102,77 +108,52 @@
     el.tagline.value = state.tagline;
     el.date.value = state.date;
     el.soup.value = state.soup;
-    el.dessert.value = state.dessert;
     el.price.value = state.price;
     el.includes.value = state.includes;
     el.footer.value = state.footer;
-    renderSections();
+    renderDishes();
     renderThemes();
   }
 
-  function renderSections() {
-    el.sections.innerHTML = "";
-    state.sections.forEach((section, si) => {
-      const wrap = document.createElement("div");
-      wrap.className = "section";
-
-      const head = document.createElement("div");
-      head.className = "section__head";
-      head.innerHTML = `
-        <span class="section__icon">${esc(section.icon || "🍽️")}</span>
-        <input class="section__title-input" type="text" value="${esc(section.title)}" placeholder="Nome da categoria" aria-label="Nome da categoria" />
-        <button class="section__remove" type="button" title="Remover categoria">✕</button>
+  // Mantém o foco no mesmo prato enquanto se escreve (não recria a lista toda)
+  function renderDishes(focusIndex) {
+    el.dishes.innerHTML = "";
+    state.dishes.forEach((name, i) => {
+      const row = document.createElement("div");
+      row.className = "dish-row";
+      row.innerHTML = `
+        <span class="dish-row__num">${i + 1}.</span>
+        <input type="text" class="dish-name" value="${esc(name)}" placeholder="Nome do prato" aria-label="Prato ${i + 1}" />
+        <button class="dish-remove" type="button" title="Remover prato">✕</button>
       `;
-      head.querySelector(".section__title-input").addEventListener("input", (e) => {
-        state.sections[si].title = e.target.value;
+      const input = row.querySelector(".dish-name");
+      input.addEventListener("input", (e) => {
+        state.dishes[i] = e.target.value;
         onChange(false);
       });
-      head.querySelector(".section__icon").addEventListener("click", () => {
-        const next = prompt("Emoji / ícone da categoria:", section.icon || "🍽️");
-        if (next !== null) { state.sections[si].icon = next.trim() || "🍽️"; onChange(); }
-      });
-      head.querySelector(".section__remove").addEventListener("click", () => {
-        state.sections.splice(si, 1);
-        onChange();
-      });
-      wrap.appendChild(head);
-
-      section.dishes.forEach((dish, di) => {
-        const row = document.createElement("div");
-        row.className = "dish-row";
-        row.innerHTML = `
-          <input type="text" class="dish-name" value="${esc(dish.name)}" placeholder="Nome do prato" aria-label="Nome do prato" />
-          <input type="text" class="price-input dish-price" value="${esc(dish.price)}" placeholder="Preço" aria-label="Preço" />
-          <button class="dish-remove" type="button" title="Remover prato">✕</button>
-        `;
-        row.querySelector(".dish-name").addEventListener("input", (e) => {
-          state.sections[si].dishes[di].name = e.target.value;
+      // Enter cria um novo prato a seguir
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          state.dishes.splice(i + 1, 0, "");
+          renderDishes(i + 1);
           onChange(false);
-        });
-        row.querySelector(".dish-price").addEventListener("input", (e) => {
-          state.sections[si].dishes[di].price = e.target.value;
-          onChange(false);
-        });
-        row.querySelector(".dish-remove").addEventListener("click", () => {
-          state.sections[si].dishes.splice(di, 1);
-          if (state.sections[si].dishes.length === 0) state.sections[si].dishes.push({ name: "", price: "" });
-          onChange();
-        });
-        wrap.appendChild(row);
+        }
       });
-
-      const addDish = document.createElement("button");
-      addDish.className = "btn btn--dashed btn--add-dish";
-      addDish.type = "button";
-      addDish.textContent = "＋ Adicionar prato";
-      addDish.addEventListener("click", () => {
-        state.sections[si].dishes.push({ name: "", price: "" });
-        onChange();
+      row.querySelector(".dish-remove").addEventListener("click", () => {
+        state.dishes.splice(i, 1);
+        if (state.dishes.length === 0) state.dishes.push("");
+        renderDishes();
+        onChange(false);
       });
-      wrap.appendChild(addDish);
-
-      el.sections.appendChild(wrap);
+      el.dishes.appendChild(row);
     });
+    el.dishCount.textContent = String(state.dishes.filter((d) => d.trim()).length);
+
+    if (focusIndex != null) {
+      const inputs = el.dishes.querySelectorAll(".dish-name");
+      if (inputs[focusIndex]) inputs[focusIndex].focus();
+    }
   }
 
   function renderThemes() {
@@ -185,32 +166,19 @@
       chip.addEventListener("click", () => {
         state.theme = t.id;
         renderThemes();
-        onChange();
+        onChange(false);
       });
       el.themes.appendChild(chip);
     });
   }
 
   /* ---------------- Render do menu (pré-visualização) ---------------- */
-  function dishLine(name, price) {
-    const priceHtml = price ? `<span class="menu__dish-price">${esc(price)}</span>` : "";
-    return `
-      <div class="menu__dish">
-        <span class="menu__dish-name">${esc(name)}</span>
-        <span class="menu__dish-dots"></span>
-        ${priceHtml}
-      </div>`;
-  }
-
   function renderMenu() {
     const m = state;
     el.menu.setAttribute("data-theme", m.theme || "taberna");
 
-    let html = "";
-
-    // Cabeçalho
     const restaurant = m.restaurant.trim() || "O Seu Restaurante";
-    html += `<header class="menu__header">
+    let html = `<header class="menu__header">
       <h1 class="menu__restaurant">${esc(restaurant)}</h1>
       ${m.tagline.trim() ? `<p class="menu__tagline">${esc(m.tagline)}</p>` : ""}
     </header>`;
@@ -218,64 +186,73 @@
     html += `<div class="menu__daytitle"><h2>Prato do Dia</h2></div>`;
     if (m.date) html += `<p class="menu__date">${esc(formatDatePT(m.date))}</p>`;
 
-    let hasContent = false;
+    // Bloco "o menu inclui" + sopa
+    const includes = m.includes.trim() || DEFAULT_INCLUDES;
+    html += `<div class="menu__includes">
+      <p class="menu__includes-label">O menu inclui</p>
+      <p class="menu__includes-value">${esc(includes)}</p>
+      ${m.soup.trim() ? `<p class="menu__soup"><strong>Sopa:</strong> ${esc(m.soup)}</p>` : ""}
+    </div>`;
 
-    // Sopa
-    if (m.soup.trim()) {
-      hasContent = true;
-      html += `<section class="menu__section">
-        <h3 class="menu__section-title">🥣 Sopa</h3>
-        ${dishLine(m.soup, "")}
-      </section>`;
+    // Pratos disponíveis
+    const dishes = m.dishes.filter((d) => d.trim());
+    if (dishes.length > 0) {
+      html += `<div class="menu__dishes-block">
+        <p class="menu__dishes-title">Pratos à escolha</p>
+        <div class="menu__dishes">
+          ${dishes.map((d) => `<div class="menu__dish">${esc(d)}</div>`).join("")}
+        </div>
+      </div>`;
+    } else {
+      html += `<p class="menu__empty">Escreve os pratos disponíveis no editor à esquerda para veres o menu aparecer aqui.</p>`;
     }
 
-    // Secções de pratos
-    m.sections.forEach((s) => {
-      const dishes = s.dishes.filter((d) => d.name.trim());
-      if (dishes.length === 0) return;
-      hasContent = true;
-      html += `<section class="menu__section">
-        <h3 class="menu__section-title">${esc(s.icon || "🍽️")} ${esc(s.title || "Pratos")}</h3>
-        ${dishes.map((d) => dishLine(d.name, d.price)).join("")}
-      </section>`;
-    });
-
-    // Sobremesa
-    if (m.dessert.trim()) {
-      hasContent = true;
-      html += `<section class="menu__section">
-        <h3 class="menu__section-title">🍮 Sobremesa</h3>
-        ${dishLine(m.dessert, "")}
-      </section>`;
-    }
-
-    // Caixa de preço
     if (m.price.trim()) {
       html += `<div class="menu__price-box">
-        <p class="menu__price-label">Menu do Dia</p>
+        <p class="menu__price-label">Menu completo</p>
         <p class="menu__price-value">${esc(m.price)}</p>
-        ${m.includes.trim() ? `<p class="menu__price-includes">${esc(m.includes)}</p>` : ""}
       </div>`;
     }
 
-    if (!hasContent) {
-      html += `<p class="menu__empty">Escreve os pratos do dia no editor à esquerda para veres o menu aparecer aqui.</p>`;
-    }
-
-    // Rodapé
     if (m.footer.trim()) {
       html += `<footer class="menu__footer">${esc(m.footer)}</footer>`;
     }
 
     el.menu.innerHTML = html;
+    autoFit();
+  }
+
+  /* ---------------- Auto-ajuste à folha A4 ----------------
+     Escolhe um fator inicial pelo nº de pratos (poucos → maior,
+     muitos → menor) e depois reduz até caber na página. */
+  function autoFit() {
+    const menu = el.menu;
+    const count = state.dishes.filter((d) => d.trim()).length;
+
+    let fit;
+    if (count <= 4) fit = 1.28;
+    else if (count <= 6) fit = 1.12;
+    else if (count <= 8) fit = 1.0;
+    else if (count <= 10) fit = 0.9;
+    else if (count <= 13) fit = 0.8;
+    else fit = 0.7;
+
+    menu.style.setProperty("--fit", fit.toFixed(3));
+
+    // Reduz enquanto o conteúdo transbordar a folha (garante 1 página)
+    let guard = 0;
+    while (menu.scrollHeight > menu.clientHeight + 1 && fit > 0.45 && guard < 60) {
+      fit -= 0.02;
+      menu.style.setProperty("--fit", fit.toFixed(3));
+      guard++;
+    }
   }
 
   /* ---------------- Fluxo de alterações ---------------- */
-  // rerenderEditor=false evita perder o foco enquanto se escreve num input
-  function onChange(rerenderEditor = true) {
+  function onChange(rerenderDishes = true) {
     save();
     renderMenu();
-    if (rerenderEditor) renderSections();
+    if (rerenderDishes) renderDishes();
   }
 
   function bindSimpleInputs() {
@@ -284,7 +261,6 @@
       ["tagline", el.tagline],
       ["date", el.date],
       ["soup", el.soup],
-      ["dessert", el.dessert],
       ["price", el.price],
       ["includes", el.includes],
       ["footer", el.footer],
@@ -298,19 +274,21 @@
   }
 
   /* ---------------- Ações ---------------- */
-  el.addSection.addEventListener("click", () => {
-    state.sections.push({ icon: "🍽️", title: "Nova categoria", dishes: [{ name: "", price: "" }] });
-    onChange();
+  el.addDish.addEventListener("click", () => {
+    state.dishes.push("");
+    renderDishes(state.dishes.length - 1);
+    onChange(false);
   });
 
   el.btnPrint.addEventListener("click", () => window.print());
 
   el.btnClear.addEventListener("click", () => {
-    if (!confirm("Limpar os pratos deste dia? O nome do restaurante e o tema são mantidos.")) return;
-    const keep = { restaurant: state.restaurant, tagline: state.tagline, theme: state.theme };
-    state = Object.assign(defaultState(), keep, { footer: state.footer });
+    if (!confirm("Limpar a sopa e os pratos deste dia? O nome do restaurante e o tema são mantidos.")) return;
+    state.soup = "";
+    state.dishes = ["", "", ""];
+    state.date = todayISO();
     fillEditor();
-    onChange();
+    onChange(false);
   });
 
   el.btnImage.addEventListener("click", exportImage);
@@ -326,12 +304,7 @@
     el.btnImage.disabled = true;
 
     window
-      .html2canvas(el.menu, {
-        scale: 2,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-        logging: false,
-      })
+      .html2canvas(el.menu, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false })
       .then(function (canvas) {
         canvas.toBlob(function (blob) {
           if (!blob) throw new Error("blob nulo");
@@ -364,4 +337,6 @@
   fillEditor();
   bindSimpleInputs();
   renderMenu();
+  // Reajusta se a janela mudar de tamanho (o A4 pode ser escalado no ecrã)
+  window.addEventListener("resize", autoFit);
 })();

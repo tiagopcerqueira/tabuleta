@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prato do Dia — Gerador de Menu</title>
-  <meta name="description" content="Escreve os pratos do dia e gera um menu bonito para mostrar aos clientes." />
+  <meta name="description" content="Escreve a sopa e os pratos disponíveis e gera um menu A4 para mostrar aos clientes." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -14,7 +14,7 @@
       <span class="topbar__logo">🍲</span>
       <div>
         <h1>Prato do Dia</h1>
-        <p>Escreve os pratos e gera o menu para os clientes</p>
+        <p>Escreve a sopa e os pratos e gera o menu para os clientes</p>
       </div>
     </div>
     <div class="topbar__actions">
@@ -29,6 +29,7 @@
     <section class="editor no-print" aria-label="Editor do menu">
       <div class="card">
         <h2 class="card__title">Restaurante</h2>
+        <p class="card__hint">Só é preciso na primeira vez — fica guardado.</p>
         <label class="field">
           <span>Nome do restaurante</span>
           <input id="in-restaurant" type="text" placeholder="Ex.: Tasca do Manel" />
@@ -44,43 +45,32 @@
       </div>
 
       <div class="card">
-        <div class="card__head">
-          <h2 class="card__title">Sopa</h2>
-        </div>
+        <h2 class="card__title">Sopa do dia</h2>
         <label class="field">
-          <input id="in-soup" type="text" placeholder="Ex.: Sopa de legumes" />
+          <input id="in-soup" type="text" placeholder="Ex.: Caldo verde" />
         </label>
       </div>
 
-      <div class="card" id="sections-card">
+      <div class="card" id="dishes-card">
         <div class="card__head">
-          <h2 class="card__title">Pratos do dia</h2>
+          <h2 class="card__title">Pratos disponíveis</h2>
+          <span id="dish-count" class="badge">0</span>
         </div>
-        <div id="sections"><!-- secções de pratos injetadas por JS --></div>
-        <button id="btn-add-section" class="btn btn--dashed" type="button">＋ Adicionar categoria</button>
+        <p class="card__hint">Escreve os pratos de hoje. O menu ajusta o espaçamento sozinho para caber numa folha A4.</p>
+        <div id="dishes"><!-- inputs de pratos injetados por JS --></div>
+        <button id="btn-add-dish" class="btn btn--dashed" type="button">＋ Adicionar prato</button>
       </div>
 
       <div class="card">
-        <div class="card__head">
-          <h2 class="card__title">Sobremesa</h2>
-        </div>
+        <h2 class="card__title">Preço &amp; nota</h2>
         <label class="field">
-          <input id="in-dessert" type="text" placeholder="Ex.: Arroz doce / Fruta da época" />
+          <span>Preço do menu</span>
+          <input id="in-price" type="text" placeholder="Ex.: 9,50 €" />
         </label>
-      </div>
-
-      <div class="card">
-        <h2 class="card__title">Preço &amp; extras</h2>
-        <div class="field-row">
-          <label class="field">
-            <span>Preço do menu</span>
-            <input id="in-price" type="text" placeholder="Ex.: 9,50 €" />
-          </label>
-          <label class="field">
-            <span>Inclui</span>
-            <input id="in-includes" type="text" placeholder="Ex.: Sopa + Prato + Café" />
-          </label>
-        </div>
+        <label class="field">
+          <span>O menu inclui</span>
+          <input id="in-includes" type="text" placeholder="Sopa · Pão · Bebida · Café · Prato à escolha" />
+        </label>
         <label class="field">
           <span>Nota de rodapé (opcional)</span>
           <input id="in-footer" type="text" placeholder="Ex.: Bom apetite! Aceitamos take-away." />
@@ -98,9 +88,9 @@
 
     <!-- ============ PRÉ-VISUALIZAÇÃO ============ -->
     <section class="preview" aria-label="Pré-visualização do menu">
-      <div class="preview__hint no-print">Pré-visualização — assim vai ficar impresso 👇</div>
+      <div class="preview__hint no-print">Pré-visualização — uma folha A4, pronta a imprimir 👇</div>
       <div id="menu-wrap" class="menu-wrap">
-        <article id="menu" class="menu" data-theme="taberna">
+        <article id="menu" class="menu" data-theme="taberna" style="--fit:1">
           <!-- render por JS -->
         </article>
       </div>
