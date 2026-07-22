@@ -59,14 +59,17 @@
       <div class="card">
         <h2 class="card__title">Sopa do dia</h2>
         <label class="field">
-          <input id="in-soup" type="text" placeholder="Ex.: Caldo verde" />
+          <input id="in-soup" type="text" list="soup-suggestions" placeholder="Ex.: Caldo verde" />
         </label>
       </div>
 
       <div class="card" id="dishes-card">
         <div class="card__head">
           <h2 class="card__title">Pratos disponíveis</h2>
-          <span id="dish-count" class="badge">0</span>
+          <span class="card__head-actions">
+            <button id="btn-copy-prev" class="btn btn--ghost btn--small" type="button" title="Recuperar o último menu guardado">📋 Copiar de ontem</button>
+            <span id="dish-count" class="badge">0</span>
+          </span>
         </div>
         <p class="card__hint">Escreve os pratos de hoje. O menu ajusta o espaçamento sozinho para caber numa folha A4.</p>
         <div id="dishes"><!-- inputs de pratos injetados por JS --></div>
@@ -101,6 +104,7 @@
     <!-- ============ PRÉ-VISUALIZAÇÃO ============ -->
     <section class="preview" aria-label="Pré-visualização do menu">
       <div class="preview__hint no-print">Pré-visualização — uma folha A4, pronta a imprimir 👇</div>
+      <div id="fit-warning" class="preview__warn no-print" hidden>⚠️ Muitos pratos — o texto do menu vai ficar pequeno. Considera reduzir a lista.</div>
       <div id="menu-wrap" class="menu-wrap">
         <article id="menu" class="menu" data-theme="azulejo" style="--fit:1">
           <!-- render por JS -->
@@ -129,6 +133,9 @@
   </div>
 
   <div id="pd-toast" class="pd-toast no-print" role="status" aria-live="polite" hidden></div>
+
+  <datalist id="dish-suggestions"></datalist>
+  <datalist id="soup-suggestions"></datalist>
 
   <script src="assets/html2canvas.min.js"></script>
   <script src="app.js"></script>

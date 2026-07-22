@@ -19,17 +19,22 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 2. À esquerda, escreve o dia:
    - Nome do restaurante e frase (só é preciso na primeira vez — fica guardado).
    - **Sopa do dia**.
-   - **Pratos disponíveis** — uma lista simples. Adiciona com **＋** (ou carrega em **Enter** num prato para criar o seguinte) e remove com **✕**.
+   - **Pratos disponíveis** — uma lista simples. Adiciona com **＋** (ou carrega em **Enter** num prato para criar o seguinte), reordena com **▲▼** e remove com **✕**. Enquanto escreves, a app sugere pratos e sopas de dias anteriores.
+   - **📋 Copiar de ontem** — recupera o último menu guardado para só ajustares o que mudou.
    - Preço do menu (opcional).
 3. À direita vês a **pré-visualização em tempo real** de como o menu vai ficar na folha A4.
 4. Quando estiver pronto, usa os botões no topo:
    - **🖨️ Imprimir / PDF** — imprime em A4 ou guarda como PDF (no diálogo de impressão, escolhe "Guardar como PDF").
    - **🖼️ Guardar imagem** — descarrega o menu em PNG, ideal para enviar no WhatsApp ou pôr nas redes sociais.
-   - **🧹 Limpar dia** — apaga os pratos para começar um novo dia (mantém o nome do restaurante e o tema).
+   - **🧹 Limpar dia** — apaga os pratos para começar um novo dia (mantém o nome do restaurante e o tema). Se te enganares, tens uns segundos para carregar em **Anular**.
 
 ## Funcionalidades
 
 - ✅ Interface intuitiva, toda em português. Só se escreve a sopa e os pratos.
+- ✅ **Histórico dos últimos 60 dias** com botão "📋 Copiar de ontem".
+- ✅ **Sugestões automáticas** de pratos e sopas já usados, enquanto se escreve.
+- ✅ Reordenar pratos com ▲▼ e "Limpar dia" com opção de **Anular**.
+- ✅ Aviso quando há pratos a mais e o texto do menu ficaria pequeno.
 - ✅ Design "Azulejo" com tipografia Fraunces (incluída, funciona offline).
 - ✅ Pré-visualização instantânea do menu.
 - ✅ **Encaixe automático numa folha A4** — o espaçamento adapta-se a qualquer número de pratos.

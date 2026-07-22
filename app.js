@@ -9,7 +9,11 @@
 
   const STORAGE_KEY = "prato-do-dia:v2";
   const UI_THEME_KEY = "prato-do-dia:ui-theme";
+  const HISTORY_KEY = "prato-do-dia:history:v1";
   const DEFAULT_INCLUDES = "Sopa · Pão · Bebida · Café · Prato à escolha";
+  const HISTORY_MAX_DAYS = 60; // poda o histórico às 60 datas mais recentes
+  const MAX_DISH_SUGGESTIONS = 80;
+  const MAX_SOUP_SUGGESTIONS = 30;
 
   const THEMES = [
     { id: "azulejo", label: "Azulejo", color: "#1c5b86" },
@@ -55,7 +59,8 @@
     return String(str == null ? "" : str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;"); // também usado em atributos (value="…")
   }
 
   function save() {
@@ -64,6 +69,8 @@
     } catch (e) {
       /* localStorage indisponível — ignora */
     }
+    saveHistory();
+    rebuildSuggestions();
   }
 
   function load() {
@@ -86,6 +93,41 @@
     return s;
   }
 
+  /* ---------------- Histórico de menus (p/ "copiar de ontem" e sugestões) ---------------- */
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      const data = raw ? JSON.parse(raw) : null;
+      if (!data || typeof data !== "object" || !data.days || typeof data.days !== "object") {
+        return { days: {} };
+      }
+      return data;
+    } catch (e) {
+      return { days: {} };
+    }
+  }
+
+  // Grava o dia atual no histórico (poda o dia se ficar vazio) e limita a 60 datas
+  function saveHistory() {
+    try {
+      const history = loadHistory();
+      const soup = (state.soup || "").trim();
+      const dishes = state.dishes.map((d) => d.trim()).filter((d) => d);
+      if (!soup && dishes.length === 0) {
+        delete history.days[state.date];
+      } else {
+        history.days[state.date] = { soup: soup, dishes: dishes };
+      }
+      const dates = Object.keys(history.days).sort(); // ISO ordena bem lexicograficamente
+      while (dates.length > HISTORY_MAX_DAYS) {
+        delete history.days[dates.shift()];
+      }
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      /* localStorage indisponível — ignora */
+    }
+  }
+
   /* ---------------- Referências ao DOM ---------------- */
   const el = {
     restaurant: document.getElementById("in-restaurant"),
@@ -97,6 +139,9 @@
     footer: document.getElementById("in-footer"),
     dishes: document.getElementById("dishes"),
     dishCount: document.getElementById("dish-count"),
+    dishSuggestions: document.getElementById("dish-suggestions"),
+    soupSuggestions: document.getElementById("soup-suggestions"),
+    btnCopyPrev: document.getElementById("btn-copy-prev"),
     themes: document.getElementById("themes"),
     menu: document.getElementById("menu"),
     addDish: document.getElementById("btn-add-dish"),
@@ -111,6 +156,7 @@
     modalImg: document.getElementById("pd-modal-img"),
     modalDownload: document.getElementById("pd-modal-download"),
     modalPrint: document.getElementById("pd-modal-print"),
+    fitWarning: document.getElementById("fit-warning"),
   };
 
   /* ---------------- Preencher o editor ---------------- */
@@ -134,7 +180,9 @@
       row.className = "dish-row";
       row.innerHTML = `
         <span class="dish-row__num">${i + 1}.</span>
-        <input type="text" class="dish-name" value="${esc(name)}" placeholder="Nome do prato" aria-label="Prato ${i + 1}" />
+        <input type="text" class="dish-name" list="dish-suggestions" value="${esc(name)}" placeholder="Nome do prato" aria-label="Prato ${i + 1}" />
+        <button class="dish-move" type="button" data-dir="-1" title="Mover para cima" aria-label="Mover prato para cima">▲</button>
+        <button class="dish-move" type="button" data-dir="1" title="Mover para baixo" aria-label="Mover prato para baixo">▼</button>
         <button class="dish-remove" type="button" title="Remover prato">✕</button>
       `;
       const input = row.querySelector(".dish-name");
@@ -150,6 +198,23 @@
           renderDishes(i + 1);
           onChange(false);
         }
+      });
+      // Botões de reordenar
+      row.querySelectorAll(".dish-move").forEach((btn) => {
+        const dir = parseInt(btn.getAttribute("data-dir"), 10);
+        const isFirst = i === 0;
+        const isLast = i === state.dishes.length - 1;
+        if ((dir === -1 && isFirst) || (dir === 1 && isLast)) {
+          btn.disabled = true;
+        }
+        btn.addEventListener("click", () => {
+          const newIndex = i + dir;
+          const temp = state.dishes[i];
+          state.dishes[i] = state.dishes[newIndex];
+          state.dishes[newIndex] = temp;
+          renderDishes(newIndex);
+          onChange(false);
+        });
       });
       row.querySelector(".dish-remove").addEventListener("click", () => {
         state.dishes.splice(i, 1);
@@ -181,6 +246,47 @@
       });
       el.themes.appendChild(chip);
     });
+  }
+
+  // Reconstrói os <datalist> de sugestões a partir do histórico (exclui o dia atual)
+  function rebuildSuggestions() {
+    if (!el.dishSuggestions || !el.soupSuggestions) return;
+    const history = loadHistory();
+    const dates = Object.keys(history.days)
+      .filter((d) => d !== state.date)
+      .sort()
+      .reverse(); // mais recentes primeiro
+
+    const dishSeen = new Set();
+    const dishList = [];
+    const soupSeen = new Set();
+    const soupList = [];
+
+    dates.forEach((date) => {
+      const day = history.days[date];
+      if (!day) return;
+      const soup = String(day.soup || "").trim();
+      if (soup && soupList.length < MAX_SOUP_SUGGESTIONS) {
+        const key = soup.toLowerCase();
+        if (!soupSeen.has(key)) {
+          soupSeen.add(key);
+          soupList.push(soup);
+        }
+      }
+      (Array.isArray(day.dishes) ? day.dishes : []).forEach((dish) => {
+        if (dishList.length >= MAX_DISH_SUGGESTIONS) return;
+        const name = String(dish || "").trim();
+        if (!name) return;
+        const key = name.toLowerCase();
+        if (!dishSeen.has(key)) {
+          dishSeen.add(key);
+          dishList.push(name);
+        }
+      });
+    });
+
+    el.dishSuggestions.innerHTML = dishList.map((d) => `<option value="${esc(d)}"></option>`).join("");
+    el.soupSuggestions.innerHTML = soupList.map((s) => `<option value="${esc(s)}"></option>`).join("");
   }
 
   /* ---------------- Render do menu (pré-visualização) ---------------- */
@@ -258,6 +364,11 @@
       menu.style.setProperty("--fit", fit.toFixed(3));
       guard++;
     }
+
+    // Mostrar/esconder aviso de lotação
+    if (el.fitWarning) {
+      el.fitWarning.hidden = fit >= 0.62;
+    }
   }
 
   /* ---------------- Fluxo de alterações ---------------- */
@@ -299,13 +410,43 @@
 
   el.btnPrint.addEventListener("click", printMenu);
 
+  // Copia a sopa e os pratos do menu guardado mais recente anterior à data atual
+  el.btnCopyPrev.addEventListener("click", () => {
+    const history = loadHistory();
+    const prevDate = Object.keys(history.days)
+      .filter((d) => d < state.date)
+      .sort()
+      .pop();
+    if (!prevDate) {
+      toast("Ainda não há nenhum menu anterior guardado.");
+      return;
+    }
+    const day = history.days[prevDate];
+    state.soup = day.soup || "";
+    state.dishes = Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : [""];
+    el.soup.value = state.soup;
+    renderDishes();
+    onChange(false);
+    toast(`Copiado o menu de ${formatDatePT(prevDate)}.`);
+  });
+
   el.btnClear.addEventListener("click", () => {
-    if (!confirm("Limpar a sopa e os pratos deste dia? O nome do restaurante e o tema são mantidos.")) return;
+    const snapshot = { soup: state.soup, dishes: state.dishes.slice(), date: state.date };
     state.soup = "";
     state.dishes = ["", "", ""];
     state.date = todayISO();
     fillEditor();
     onChange(false);
+    toast("Dia limpo.", {
+      label: "Anular",
+      onClick: function () {
+        state.soup = snapshot.soup;
+        state.dishes = snapshot.dishes;
+        state.date = snapshot.date;
+        fillEditor();
+        onChange(false);
+      },
+    });
   });
 
   el.btnImage.addEventListener("click", exportImage);
@@ -343,13 +484,29 @@
      ============================================================ */
 
   var toastTimer = null;
-  function toast(msg) {
+  // action (opcional): { label, onClick } — mostra um botão no toast e prolonga a duração
+  function toast(msg, action) {
     var t = document.getElementById("pd-toast");
     if (!t) return;
-    t.textContent = msg;
+    t.textContent = "";
+    var text = document.createElement("span");
+    text.textContent = msg;
+    t.appendChild(text);
+    if (action && action.label) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pd-toast__action";
+      btn.textContent = action.label;
+      btn.addEventListener("click", function () {
+        if (toastTimer) clearTimeout(toastTimer);
+        t.hidden = true;
+        if (typeof action.onClick === "function") action.onClick();
+      });
+      t.appendChild(btn);
+    }
     t.hidden = false;
     if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.hidden = true; }, 6000);
+    toastTimer = setTimeout(function () { t.hidden = true; }, action ? 8000 : 6000);
   }
 
   var RESTRICTED_MSG =
@@ -457,6 +614,7 @@
   })();
   fillEditor();
   bindSimpleInputs();
+  rebuildSuggestions();
   renderMenu();
   // Reajusta se a janela mudar de tamanho (o A4 pode ser escalado no ecrã)
   window.addEventListener("resize", autoFit);

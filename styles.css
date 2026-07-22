@@ -145,6 +145,7 @@ html, body {
 .btn--primary:hover { background: var(--primary-deep); border-color: transparent; }
 .btn--ghost { background: transparent; border-color: transparent; color: var(--muted); box-shadow: none; }
 .btn--ghost:hover { background: var(--panel-2); color: var(--ink); }
+.btn--small { padding: 6px 10px; font-size: 12.5px; }
 
 /* ---------------- Layout ---------------- */
 .layout {
@@ -171,6 +172,7 @@ html, body {
   box-shadow: var(--shadow);
 }
 .card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.card__head-actions { display: flex; align-items: center; gap: 8px; }
 .card__title {
   margin: 0 0 14px;
   font-size: 12px;
@@ -233,6 +235,18 @@ input:focus {
   font-variant-numeric: tabular-nums;
 }
 .dish-row input { flex: 1; }
+.dish-move {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  padding: 8px 5px;
+  border-radius: 8px;
+}
+.dish-move:hover { background: var(--panel-2); color: var(--primary); }
+.dish-move[disabled] { opacity: 0.3; cursor: default; background: transparent; }
 .dish-remove {
   border: 1px solid transparent;
   background: transparent;
@@ -280,6 +294,7 @@ input:focus {
 /* ---------------- Pré-visualização ---------------- */
 .preview { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 92px; }
 .preview__hint { font-size: 12.5px; color: var(--muted); text-align: center; }
+.preview__warn { text-align: center; font-size: 12.5px; font-weight: 600; color: var(--brass); background: color-mix(in srgb, var(--brass) 12%, transparent); border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent); border-radius: var(--radius-sm); padding: 8px 14px; }
 .menu-wrap { display: flex; justify-content: center; }
 
 /* ============================================================
@@ -480,8 +495,24 @@ input:focus {
   line-height: 1.5;
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
   text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
 }
 .pd-toast[hidden] { display: none; }
+.pd-toast__action {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--panel) 40%, transparent);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pd-toast__action:hover { background: color-mix(in srgb, var(--panel) 15%, transparent); }
 
 /* ---------------- Impressão ---------------- */
 @media print {
