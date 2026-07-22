@@ -104,6 +104,13 @@
     btnImage: document.getElementById("btn-image"),
     btnClear: document.getElementById("btn-clear"),
     btnTheme: document.getElementById("btn-theme"),
+    modal: document.getElementById("pd-modal"),
+    modalBackdrop: document.getElementById("pd-modal-backdrop"),
+    modalClose: document.getElementById("pd-modal-close"),
+    modalHint: document.getElementById("pd-modal-hint"),
+    modalImg: document.getElementById("pd-modal-img"),
+    modalDownload: document.getElementById("pd-modal-download"),
+    modalPrint: document.getElementById("pd-modal-print"),
   };
 
   /* ---------------- Preencher o editor ---------------- */
@@ -290,7 +297,7 @@
     onChange(false);
   });
 
-  el.btnPrint.addEventListener("click", () => window.print());
+  el.btnPrint.addEventListener("click", printMenu);
 
   el.btnClear.addEventListener("click", () => {
     if (!confirm("Limpar a sopa e os pratos deste dia? O nome do restaurante e o tema são mantidos.")) return;
@@ -329,36 +336,109 @@
     applyUiTheme(next);
   });
 
-  /* ---------------- Exportar imagem PNG (via html2canvas) ---------------- */
-  function exportImage() {
-    if (typeof window.html2canvas !== "function") {
-      alert("Componente de imagem indisponível. Usa antes 'Imprimir / PDF'.");
-      return;
-    }
-    const prev = el.btnImage.textContent;
-    el.btnImage.textContent = "⏳ A gerar…";
-    el.btnImage.disabled = true;
+  /* ============================================================
+     Gerar imagem / imprimir — robusto em qualquer contexto
+     (funciona também dentro da iframe do artefacto, onde as
+     transferências e a impressão diretas do navegador estão limitadas)
+     ============================================================ */
 
-    window
-      .html2canvas(el.menu, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false })
-      .then(function (canvas) {
-        canvas.toBlob(function (blob) {
-          if (!blob) throw new Error("blob nulo");
-          const a = document.createElement("a");
-          a.download = fileName();
-          a.href = URL.createObjectURL(blob);
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-        }, "image/png");
-      })
-      .catch(function () {
-        alert("Não foi possível gerar a imagem neste navegador. Usa antes 'Imprimir / PDF'.");
-      })
-      .then(function () {
-        el.btnImage.textContent = prev;
-        el.btnImage.disabled = false;
-      });
+  var toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById("pd-toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.hidden = false;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 6000);
   }
+
+  var RESTRICTED_MSG =
+    "Aqui na pré-visualização não é possível guardar/imprimir. Abre a app publicada (link) ou o ficheiro em página inteira — aí funciona.";
+
+  function inIframe() {
+    try { return window.self !== window.top; } catch (e) { return true; }
+  }
+  function isTouch() {
+    return "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0;
+  }
+
+  // Renderiza o menu para um dataURL PNG
+  function renderPng(btn) {
+    if (typeof window.html2canvas !== "function") {
+      return Promise.reject(new Error("html2canvas indisponível"));
+    }
+    var prev;
+    if (btn) { prev = btn.textContent; btn.textContent = "⏳ A gerar…"; btn.disabled = true; }
+    return window
+      .html2canvas(el.menu, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false })
+      .then(function (canvas) { return canvas.toDataURL("image/png"); })
+      .then(
+        function (url) { if (btn) { btn.textContent = prev; btn.disabled = false; } return url; },
+        function (err) { if (btn) { btn.textContent = prev; btn.disabled = false; } throw err; }
+      );
+  }
+
+  // Botão "Guardar imagem" → mostra a pré-visualização com opção de guardar
+  function exportImage() {
+    renderPng(el.btnImage)
+      .then(function (url) { openModal(url); })
+      .catch(function () { toast(RESTRICTED_MSG); });
+  }
+
+  // Botão "Imprimir / PDF"
+  function printMenu() {
+    // Página normal (alojada ou ficheiro): impressão nativa, texto nítido
+    if (!inIframe()) { window.print(); return; }
+    // Dentro da iframe do artefacto: imprimir a partir da imagem
+    renderPng(el.btnPrint)
+      .then(function (url) { printFromImage(url); })
+      .catch(function () { toast(RESTRICTED_MSG); });
+  }
+
+  // Abre a imagem numa janela A4 e manda imprimir; se falhar, mostra a modal
+  function printFromImage(dataUrl) {
+    var w = null;
+    try { w = window.open("", "_blank"); } catch (e) { w = null; }
+    if (w && w.document) {
+      w.document.write(
+        '<!doctype html><html><head><meta charset="utf-8"><title>Prato do Dia</title>' +
+          "<style>@page{size:A4;margin:0}html,body{margin:0;padding:0}" +
+          "img{width:100%;height:auto;display:block}</style></head><body>" +
+          '<img src="' + dataUrl + '" onload="setTimeout(function(){window.focus();window.print();},80)">' +
+          "</body></html>"
+      );
+      w.document.close();
+    } else {
+      // Popups bloqueados → mostra a modal para guardar/imprimir manualmente
+      openModal(dataUrl, true);
+    }
+  }
+
+  /* ---------------- Modal de pré-visualização ---------------- */
+  function openModal(dataUrl, forPrint) {
+    el.modalImg.src = dataUrl;
+    el.modalDownload.href = dataUrl;
+    el.modalDownload.download = fileName();
+    el.modalHint.textContent = isTouch()
+      ? "Para guardar: toca e mantém premido na imagem e escolhe “Guardar imagem”. Ou usa o botão Descarregar."
+      : (forPrint
+          ? "Clica em Imprimir, ou botão direito na imagem → “Guardar imagem”."
+          : "Clica em Descarregar, ou botão direito na imagem → “Guardar imagem”.");
+    el.modal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal() {
+    el.modal.hidden = true;
+    document.body.style.overflow = "";
+  }
+  el.modalClose.addEventListener("click", closeModal);
+  el.modalBackdrop.addEventListener("click", closeModal);
+  el.modalPrint.addEventListener("click", function () {
+    if (el.modalImg.src) printFromImage(el.modalImg.src);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !el.modal.hidden) closeModal();
+  });
 
   function fileName() {
     const base = (state.restaurant.trim() || "prato-do-dia")

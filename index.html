@@ -109,6 +109,27 @@
     </section>
   </main>
 
+  <!-- ============ MODAL: menu gerado (guardar / imprimir) ============ -->
+  <div id="pd-modal" class="pd-modal no-print" hidden>
+    <div class="pd-modal__backdrop" id="pd-modal-backdrop"></div>
+    <div class="pd-modal__card" role="dialog" aria-modal="true" aria-label="Menu gerado">
+      <div class="pd-modal__bar">
+        <strong>Menu pronto</strong>
+        <button class="pd-modal__close" id="pd-modal-close" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <p class="pd-modal__hint" id="pd-modal-hint"></p>
+      <div class="pd-modal__imgwrap">
+        <img id="pd-modal-img" alt="Pré-visualização do menu do dia" />
+      </div>
+      <div class="pd-modal__actions">
+        <a id="pd-modal-download" class="btn btn--primary" download>⬇️ Descarregar imagem</a>
+        <button id="pd-modal-print" class="btn" type="button">🖨️ Imprimir</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pd-toast" class="pd-toast no-print" role="status" aria-live="polite" hidden></div>
+
   <script src="assets/html2canvas.min.js"></script>
   <script src="app.js"></script>
 </body>
