@@ -30,9 +30,11 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 ## Funcionalidades
 
 - ✅ Interface intuitiva, toda em português. Só se escreve a sopa e os pratos.
+- ✅ Design "Azulejo" com tipografia Fraunces (incluída, funciona offline).
 - ✅ Pré-visualização instantânea do menu.
 - ✅ **Encaixe automático numa folha A4** — o espaçamento adapta-se a qualquer número de pratos.
-- ✅ 4 temas visuais (Taberna, Moderno, Mar, Rústico).
+- ✅ 4 temas visuais para o menu (Azulejo, Linho, Ardósia, Horta).
+- ✅ Modo claro/escuro na própria app (botão 🌙 / ☀️).
 - ✅ Data automática, escrita por extenso ("Quarta-feira, 22 de julho de 2026").
 - ✅ Impressão em A4 e exportação para PDF.
 - ✅ Exportação para imagem PNG para partilhar.
@@ -51,6 +53,7 @@ index.html                 → página principal (editor + pré-visualização)
 styles.css                 → estilos da app e do template do menu (incl. impressão A4)
 app.js                     → lógica: editor, pré-visualização, gravação, exportação
 assets/html2canvas.min.js  → biblioteca para gerar a imagem PNG (incluída, offline)
+assets/fonts/*.woff2       → tipografia Fraunces (incluída, funciona offline)
 ```
 
 ## Notas técnicas

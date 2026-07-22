@@ -11,13 +11,25 @@
   <!-- ============ BARRA SUPERIOR ============ -->
   <header class="topbar no-print">
     <div class="topbar__brand">
-      <span class="topbar__logo">🍲</span>
+      <span class="topbar__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#ffffff" fill-opacity="0.95">
+            <circle cx="12" cy="6.6" r="3.5" />
+            <circle cx="12" cy="17.4" r="3.5" />
+            <circle cx="6.6" cy="12" r="3.5" />
+            <circle cx="17.4" cy="12" r="3.5" />
+            <rect x="8.5" y="8.5" width="7" height="7" rx="1.6" />
+          </g>
+          <circle cx="12" cy="12" r="1.9" fill="#14425f" />
+        </svg>
+      </span>
       <div>
         <h1>Prato do Dia</h1>
         <p>Escreve a sopa e os pratos e gera o menu para os clientes</p>
       </div>
     </div>
     <div class="topbar__actions">
+      <button id="btn-theme" class="btn btn--ghost" type="button" title="Alternar claro/escuro" aria-label="Alternar modo claro/escuro">🌙</button>
       <button id="btn-print" class="btn btn--primary" type="button">🖨️ Imprimir / PDF</button>
       <button id="btn-image" class="btn" type="button">🖼️ Guardar imagem</button>
       <button id="btn-clear" class="btn btn--ghost" type="button">🧹 Limpar dia</button>
@@ -90,7 +102,7 @@
     <section class="preview" aria-label="Pré-visualização do menu">
       <div class="preview__hint no-print">Pré-visualização — uma folha A4, pronta a imprimir 👇</div>
       <div id="menu-wrap" class="menu-wrap">
-        <article id="menu" class="menu" data-theme="taberna" style="--fit:1">
+        <article id="menu" class="menu" data-theme="azulejo" style="--fit:1">
           <!-- render por JS -->
         </article>
       </div>

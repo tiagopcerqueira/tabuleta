@@ -8,13 +8,14 @@
   "use strict";
 
   const STORAGE_KEY = "prato-do-dia:v2";
+  const UI_THEME_KEY = "prato-do-dia:ui-theme";
   const DEFAULT_INCLUDES = "Sopa · Pão · Bebida · Café · Prato à escolha";
 
   const THEMES = [
-    { id: "taberna", label: "Taberna", color: "#7a1f1f" },
-    { id: "moderno", label: "Moderno", color: "#b8860b" },
-    { id: "mar", label: "Mar", color: "#0e5c73" },
-    { id: "rustico", label: "Rústico", color: "#e0a458" },
+    { id: "azulejo", label: "Azulejo", color: "#1c5b86" },
+    { id: "linho", label: "Linho", color: "#4a5a3c" },
+    { id: "ardosia", label: "Ardósia", color: "#232a2d" },
+    { id: "horta", label: "Horta", color: "#2f6b43" },
   ];
 
   function defaultState() {
@@ -27,7 +28,7 @@
       price: "",
       includes: DEFAULT_INCLUDES,
       footer: "Bom apetite!",
-      theme: "taberna",
+      theme: "azulejo",
     };
   }
 
@@ -80,6 +81,8 @@
     if (!Array.isArray(s.dishes)) s.dishes = ["", "", ""];
     if (typeof s.includes !== "string" || !s.includes) s.includes = DEFAULT_INCLUDES;
     if (typeof s.soup !== "string") s.soup = "";
+    // temas antigos → novos
+    if (!THEMES.some((t) => t.id === s.theme)) s.theme = "azulejo";
     return s;
   }
 
@@ -100,6 +103,7 @@
     btnPrint: document.getElementById("btn-print"),
     btnImage: document.getElementById("btn-image"),
     btnClear: document.getElementById("btn-clear"),
+    btnTheme: document.getElementById("btn-theme"),
   };
 
   /* ---------------- Preencher o editor ---------------- */
@@ -148,7 +152,7 @@
       });
       el.dishes.appendChild(row);
     });
-    el.dishCount.textContent = String(state.dishes.filter((d) => d.trim()).length);
+    updateDishCount();
 
     if (focusIndex != null) {
       const inputs = el.dishes.querySelectorAll(".dish-name");
@@ -183,7 +187,8 @@
       ${m.tagline.trim() ? `<p class="menu__tagline">${esc(m.tagline)}</p>` : ""}
     </header>`;
 
-    html += `<div class="menu__daytitle"><h2>Prato do Dia</h2></div>`;
+    html += `<div class="menu__rule"><i></i></div>`;
+    html += `<p class="menu__eyebrow">Prato do Dia</p>`;
     if (m.date) html += `<p class="menu__date">${esc(formatDatePT(m.date))}</p>`;
 
     // Bloco "o menu inclui" + sopa
@@ -191,7 +196,7 @@
     html += `<div class="menu__includes">
       <p class="menu__includes-label">O menu inclui</p>
       <p class="menu__includes-value">${esc(includes)}</p>
-      ${m.soup.trim() ? `<p class="menu__soup"><strong>Sopa:</strong> ${esc(m.soup)}</p>` : ""}
+      ${m.soup.trim() ? `<p class="menu__soup"><span>Sopa do dia</span>${esc(m.soup)}</p>` : ""}
     </div>`;
 
     // Pratos disponíveis
@@ -249,8 +254,13 @@
   }
 
   /* ---------------- Fluxo de alterações ---------------- */
+  function updateDishCount() {
+    el.dishCount.textContent = String(state.dishes.filter((d) => d.trim()).length);
+  }
+
   function onChange(rerenderDishes = true) {
     save();
+    updateDishCount();
     renderMenu();
     if (rerenderDishes) renderDishes();
   }
@@ -293,6 +303,32 @@
 
   el.btnImage.addEventListener("click", exportImage);
 
+  /* ---------------- Modo claro/escuro da app ---------------- */
+  function applyUiTheme(mode) {
+    // mode: "light" | "dark" | null (segue o sistema)
+    if (mode === "light" || mode === "dark") {
+      document.documentElement.setAttribute("data-theme", mode);
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    const isDark =
+      mode === "dark" ||
+      (mode == null && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    el.btnTheme.textContent = isDark ? "☀️" : "🌙";
+    el.btnTheme.title = isDark ? "Mudar para modo claro" : "Mudar para modo escuro";
+  }
+
+  el.btnTheme.addEventListener("click", () => {
+    const isDarkNow =
+      document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.getAttribute("data-theme") &&
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const next = isDarkNow ? "light" : "dark";
+    try { localStorage.setItem(UI_THEME_KEY, next); } catch (e) {}
+    applyUiTheme(next);
+  });
+
   /* ---------------- Exportar imagem PNG (via html2canvas) ---------------- */
   function exportImage() {
     if (typeof window.html2canvas !== "function") {
@@ -334,6 +370,11 @@
   }
 
   /* ---------------- Arranque ---------------- */
+  (function initUiTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem(UI_THEME_KEY); } catch (e) {}
+    applyUiTheme(saved);
+  })();
   fillEditor();
   bindSimpleInputs();
   renderMenu();
