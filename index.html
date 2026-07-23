@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <!-- ?v= força o navegador a ir buscar a versão nova após cada atualização -->
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <!-- ============ BARRA SUPERIOR ============ -->
@@ -57,15 +57,23 @@
       </div>
 
       <div class="card">
-        <h2 class="card__title">Restaurante</h2>
-        <p class="card__hint">Só é preciso na primeira vez — fica guardado.</p>
+        <h2 class="card__title">Marca</h2>
+        <p class="card__hint">Define uma vez — fica em todos os menus.</p>
+        <div class="logo-field">
+          <div id="logo-preview" class="logo-preview" aria-hidden="true"><span>Sem logótipo</span></div>
+          <div class="logo-actions">
+            <button id="btn-logo" class="btn btn--small" type="button">🖼️ Escolher logótipo</button>
+            <button id="btn-logo-remove" class="btn btn--ghost btn--small" type="button" hidden>Remover</button>
+          </div>
+          <input id="in-logo" type="file" accept="image/*" hidden />
+        </div>
         <label class="field">
           <span>Nome do restaurante</span>
           <input id="in-restaurant" type="text" placeholder="Ex.: Tasca do Manel" />
         </label>
         <label class="field">
           <span>Frase / subtítulo (opcional)</span>
-          <input id="in-tagline" type="text" placeholder="Ex.: Cozinha caseira desde 1985" />
+          <input id="in-tagline" type="text" list="tagline-suggestions" placeholder="Ex.: Cozinha caseira desde 1985" />
         </label>
       </div>
 
@@ -101,15 +109,22 @@
         </label>
         <label class="field">
           <span>Nota de rodapé (opcional)</span>
-          <input id="in-footer" type="text" placeholder="Ex.: Bom apetite! Aceitamos take-away." />
+          <input id="in-footer" type="text" list="footer-suggestions" placeholder="Ex.: Bom apetite! Aceitamos take-away." />
         </label>
       </div>
 
       <div class="card">
-        <h2 class="card__title">Aparência</h2>
+        <h2 class="card__title">Modelo do menu</h2>
         <div class="field">
-          <span>Tema do menu</span>
-          <div id="themes" class="themes"><!-- temas injetados por JS --></div>
+          <span>Onde vais usar</span>
+          <div id="format-toggle" class="format-toggle">
+            <button class="format-btn" type="button" data-format="print">🖨️ Imprimir (A4)</button>
+            <button class="format-btn" type="button" data-format="story">📱 Story (9:16)</button>
+          </div>
+        </div>
+        <div class="field">
+          <span>Template</span>
+          <div id="templates" class="templates"><!-- chips injetados por JS --></div>
         </div>
       </div>
 
@@ -126,12 +141,14 @@
 
     <!-- ============ PRÉ-VISUALIZAÇÃO ============ -->
     <section class="preview" aria-label="Pré-visualização do menu">
-      <div class="preview__hint no-print">Pré-visualização — uma folha A4, pronta a imprimir 👇</div>
-      <div id="fit-warning" class="preview__warn no-print" hidden>⚠️ Muitos pratos — o texto do menu vai ficar pequeno. Considera reduzir a lista.</div>
+      <div id="preview-hint" class="preview__hint no-print">Pré-visualização — folha A4, pronta a imprimir 👇</div>
+      <div id="fit-warning" class="preview__warn no-print" hidden>⚠️ Muitos pratos — o texto vai ficar pequeno.</div>
       <div id="menu-wrap" class="menu-wrap">
-        <article id="menu" class="menu" data-theme="azulejo" style="--fit:1">
-          <!-- render por JS -->
-        </article>
+        <div id="menu-scale" class="menu-scale">
+          <article id="menu" class="menu" data-format="print" data-template="classico" style="--fit:1">
+            <!-- render por JS -->
+          </article>
+        </div>
       </div>
     </section>
   </main>
@@ -159,8 +176,10 @@
 
   <datalist id="dish-suggestions"></datalist>
   <datalist id="soup-suggestions"></datalist>
+  <datalist id="tagline-suggestions"></datalist>
+  <datalist id="footer-suggestions"></datalist>
 
   <script src="assets/html2canvas.min.js"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

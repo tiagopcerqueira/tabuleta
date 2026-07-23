@@ -6,17 +6,19 @@
    os ficheiros novos.
    ============================================================ */
 
-const CACHE = "prato-do-dia-v4";
+const CACHE = "prato-do-dia-v6";
 
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4",
-  "app.js?v=4",
+  "styles.css?v=6",
+  "app.js?v=6",
   "manifest.json",
   "assets/html2canvas.min.js",
   "assets/fonts/fraunces-roman.woff2",
   "assets/fonts/fraunces-italic.woff2",
+  "assets/fonts/archivo.woff2",
+  "assets/fonts/oswald.woff2",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
   "assets/icons/icon-512-maskable.png",

@@ -15,17 +15,27 @@
   const HISTORY_MAX_DAYS = 60; // poda o histórico às 60 datas mais recentes
   const MAX_DISH_SUGGESTIONS = 80;
   const MAX_SOUP_SUGGESTIONS = 30;
+  const MAX_PHRASE_SUGGESTIONS = 20;
+  const MAX_LOGO_SIDE = 480; // px — maior lado do logótipo depois de reduzido
 
-  const THEMES = [
-    { id: "azulejo", label: "Azulejo", color: "#1c5b86" },
-    { id: "linho", label: "Linho", color: "#4a5a3c" },
-    { id: "ardosia", label: "Ardósia", color: "#232a2d" },
-    { id: "horta", label: "Horta", color: "#2f6b43" },
-    { id: "mar", label: "Mar", color: "#0e6673" },
-    { id: "vinho", label: "Vinho", color: "#7c2438" },
-    { id: "cafe", label: "Café", color: "#6f4a2a" },
-    { id: "papel", label: "Papel", color: "#1d1d1b" },
-  ];
+  const TEMPLATES = {
+    print: [
+      { id: "classico", label: "Clássico", color: "#1c5b86" },
+      { id: "moderno", label: "Moderno", color: "#c0392b" },
+      { id: "bistro", label: "Bistrô", color: "#2f6b43" },
+      { id: "tabuleta", label: "Tabuleta", color: "#7c2438" },
+    ],
+    story: [
+      { id: "ardosia", label: "Ardósia", color: "#232a2d" },
+      { id: "vibrante", label: "Vibrante", color: "#d1502e" },
+      { id: "fresco", label: "Fresco", color: "#f2a65a" },
+      { id: "editorial", label: "Editorial", color: "#14425f" },
+    ],
+  };
+
+  function activeTemplate() {
+    return state.format === "story" ? state.templateStory : state.templatePrint;
+  }
 
   // Definições globais por omissão (sem soup/dishes/date — isso vive no histórico)
   function defaultSettings() {
@@ -35,7 +45,12 @@
       price: "",
       includes: DEFAULT_INCLUDES,
       footer: "Bom apetite!",
-      theme: "azulejo",
+      format: "print",
+      templatePrint: "classico",
+      templateStory: "ardosia",
+      logo: "",
+      taglineHistory: [],
+      footerHistory: [],
     };
   }
 
@@ -49,7 +64,12 @@
       price: typeof s.price === "string" ? s.price : d.price,
       includes: typeof s.includes === "string" && s.includes ? s.includes : d.includes,
       footer: typeof s.footer === "string" ? s.footer : d.footer,
-      theme: THEMES.some((t) => t.id === s.theme) ? s.theme : d.theme,
+      format: s.format === "story" ? "story" : "print",
+      templatePrint: TEMPLATES.print.some((t) => t.id === s.templatePrint) ? s.templatePrint : d.templatePrint,
+      templateStory: TEMPLATES.story.some((t) => t.id === s.templateStory) ? s.templateStory : d.templateStory,
+      logo: typeof s.logo === "string" ? s.logo : d.logo,
+      taglineHistory: Array.isArray(s.taglineHistory) ? s.taglineHistory.filter((x) => typeof x === "string") : d.taglineHistory,
+      footerHistory: Array.isArray(s.footerHistory) ? s.footerHistory.filter((x) => typeof x === "string") : d.footerHistory,
     };
   }
 
@@ -60,7 +80,12 @@
       price: s.price,
       includes: s.includes,
       footer: s.footer,
-      theme: s.theme,
+      format: s.format,
+      templatePrint: s.templatePrint,
+      templateStory: s.templateStory,
+      logo: s.logo,
+      taglineHistory: s.taglineHistory,
+      footerHistory: s.footerHistory,
     };
   }
 
@@ -152,6 +177,8 @@
 
   // Grava as definições globais (v3) e o conteúdo do dia atual (histórico)
   function save() {
+    state.taglineHistory = rememberPhrase(state.taglineHistory, state.tagline);
+    state.footerHistory = rememberPhrase(state.footerHistory, state.footer);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ settings: extractSettings(state) }));
     } catch (e) {
@@ -159,6 +186,7 @@
     }
     saveHistory();
     rebuildSuggestions();
+    rebuildPhraseSuggestions();
   }
 
   /* ---------------- Histórico de menus (p/ "copiar de ontem" e sugestões) ---------------- */
@@ -212,10 +240,20 @@
     dishCount: document.getElementById("dish-count"),
     dishSuggestions: document.getElementById("dish-suggestions"),
     soupSuggestions: document.getElementById("soup-suggestions"),
+    taglineSuggestions: document.getElementById("tagline-suggestions"),
+    footerSuggestions: document.getElementById("footer-suggestions"),
     btnCopyPrev: document.getElementById("btn-copy-prev"),
-    themes: document.getElementById("themes"),
+    logoPreview: document.getElementById("logo-preview"),
+    btnLogo: document.getElementById("btn-logo"),
+    btnLogoRemove: document.getElementById("btn-logo-remove"),
+    inLogo: document.getElementById("in-logo"),
+    formatToggle: document.getElementById("format-toggle"),
+    templates: document.getElementById("templates"),
+    menuWrap: document.getElementById("menu-wrap"),
+    menuScale: document.getElementById("menu-scale"),
     menu: document.getElementById("menu"),
     addDish: document.getElementById("btn-add-dish"),
+    previewHint: document.getElementById("preview-hint"),
     btnPrint: document.getElementById("btn-print"),
     btnImage: document.getElementById("btn-image"),
     btnClear: document.getElementById("btn-clear"),
@@ -243,7 +281,8 @@
     el.includes.value = state.includes;
     el.footer.value = state.footer;
     renderDishes();
-    renderThemes();
+    renderLogoControl();
+    renderTemplates();
   }
 
   // Mantém o foco no mesmo prato enquanto se escreve (não recria a lista toda)
@@ -306,20 +345,108 @@
     }
   }
 
-  function renderThemes() {
-    el.themes.innerHTML = "";
-    THEMES.forEach((t) => {
+  // Pinta o estado ativo do seletor de formato e gera os chips de template do formato ativo
+  function renderTemplates() {
+    if (el.formatToggle) {
+      el.formatToggle.querySelectorAll(".format-btn").forEach((btn) => {
+        btn.classList.toggle("is-active", btn.getAttribute("data-format") === state.format);
+      });
+    }
+    if (!el.templates) return;
+    el.templates.innerHTML = "";
+    const active = activeTemplate();
+    TEMPLATES[state.format].forEach((t) => {
       const chip = document.createElement("button");
       chip.type = "button";
-      chip.className = "theme-chip" + (state.theme === t.id ? " is-active" : "");
-      chip.innerHTML = `<span class="theme-swatch" style="background:${t.color}"></span>${t.label}`;
+      chip.className = "template-chip" + (active === t.id ? " is-active" : "");
+      chip.innerHTML = `<span class="theme-swatch" style="background:${t.color}"></span>${esc(t.label)}`;
       chip.addEventListener("click", () => {
-        state.theme = t.id;
-        renderThemes();
+        if (state.format === "story") state.templateStory = t.id;
+        else state.templatePrint = t.id;
+        renderTemplates();
         onChange(false);
       });
-      el.themes.appendChild(chip);
+      el.templates.appendChild(chip);
     });
+  }
+
+  /* ---------------- Logótipo ---------------- */
+  // Mostra o logótipo atual em #logo-preview e alterna o botão "Remover"
+  function renderLogoControl() {
+    if (!el.logoPreview) return;
+    if (state.logo) {
+      el.logoPreview.innerHTML = `<img src="${esc(state.logo)}" alt="" />`;
+      if (el.btnLogoRemove) el.btnLogoRemove.hidden = false;
+    } else {
+      el.logoPreview.innerHTML = `<span>Sem logótipo</span>`;
+      if (el.btnLogoRemove) el.btnLogoRemove.hidden = true;
+    }
+  }
+
+  // Reduz a imagem escolhida para um PNG com o maior lado até MAX_LOGO_SIDE
+  function loadLogoFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+        if (!w || !h) return;
+        const scale = Math.min(1, MAX_LOGO_SIDE / Math.max(w, h));
+        w = Math.max(1, Math.round(w * scale));
+        h = Math.max(1, Math.round(h * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        state.logo = canvas.toDataURL("image/png");
+        renderLogoControl();
+        onChange(false);
+      };
+      img.onerror = () => toast("Não foi possível ler essa imagem.");
+      img.src = String(reader.result || "");
+    };
+    reader.onerror = () => toast("Não foi possível ler essa imagem.");
+    reader.readAsDataURL(file);
+  }
+
+  if (el.btnLogo && el.inLogo) {
+    el.btnLogo.addEventListener("click", () => el.inLogo.click());
+    el.inLogo.addEventListener("change", () => {
+      const file = el.inLogo.files && el.inLogo.files[0];
+      loadLogoFile(file);
+      el.inLogo.value = "";
+    });
+  }
+  if (el.btnLogoRemove) {
+    el.btnLogoRemove.addEventListener("click", () => {
+      state.logo = "";
+      renderLogoControl();
+      onChange(false);
+    });
+  }
+
+  /* ---------------- Sugestões de frases (tagline / rodapé) ---------------- */
+  // Preenche os datalists de tagline/rodapé a partir do histórico guardado nas definições (mais recentes primeiro)
+  function rebuildPhraseSuggestions() {
+    if (el.taglineSuggestions) {
+      el.taglineSuggestions.innerHTML = state.taglineHistory.map((s) => `<option value="${esc(s)}"></option>`).join("");
+    }
+    if (el.footerSuggestions) {
+      el.footerSuggestions.innerHTML = state.footerHistory.map((s) => `<option value="${esc(s)}"></option>`).join("");
+    }
+  }
+
+  // Insere uma frase no topo do respetivo histórico (dedupe case-insensitive, cap MAX_PHRASE_SUGGESTIONS)
+  function rememberPhrase(list, value) {
+    const trimmed = (value || "").trim();
+    if (!trimmed) return list;
+    const key = trimmed.toLowerCase();
+    const next = list.filter((s) => s.toLowerCase() !== key);
+    next.unshift(trimmed);
+    return next.slice(0, MAX_PHRASE_SUGGESTIONS);
   }
 
   // Reconstrói os <datalist> de sugestões a partir do histórico (exclui o dia atual)
@@ -366,10 +493,12 @@
   /* ---------------- Render do menu (pré-visualização) ---------------- */
   function renderMenu() {
     const m = state;
-    el.menu.setAttribute("data-theme", m.theme || "taberna");
+    el.menu.setAttribute("data-format", m.format);
+    el.menu.setAttribute("data-template", activeTemplate());
 
     const restaurant = m.restaurant.trim() || "O Seu Restaurante";
     let html = `<header class="menu__header">
+      ${m.logo ? `<img class="menu__logo" src="${esc(m.logo)}" alt="" />` : ""}
       <h1 class="menu__restaurant">${esc(restaurant)}</h1>
       ${m.tagline.trim() ? `<p class="menu__tagline">${esc(m.tagline)}</p>` : ""}
     </header>`;
@@ -412,11 +541,13 @@
 
     el.menu.innerHTML = html;
     autoFit();
+    updatePreviewScale();
   }
 
-  /* ---------------- Auto-ajuste à folha A4 ----------------
+  /* ---------------- Auto-ajuste à folha/canvas ----------------
      Escolhe um fator inicial pelo nº de pratos (poucos → maior,
-     muitos → menor) e depois reduz até caber na página. */
+     muitos → menor) e depois reduz até caber na folha (print) ou
+     no canvas (story). */
   function autoFit() {
     const menu = el.menu;
     const count = state.dishes.filter((d) => d.trim()).length;
@@ -431,7 +562,7 @@
 
     menu.style.setProperty("--fit", fit.toFixed(3));
 
-    // Reduz enquanto o conteúdo transbordar a folha (garante 1 página)
+    // Reduz enquanto o conteúdo transbordar a folha/canvas (garante que cabe tudo)
     let guard = 0;
     while (menu.scrollHeight > menu.clientHeight + 1 && fit > 0.45 && guard < 60) {
       fit -= 0.02;
@@ -442,6 +573,35 @@
     // Mostrar/esconder aviso de lotação
     if (el.fitWarning) {
       el.fitWarning.hidden = fit >= 0.62;
+    }
+  }
+
+  /* ---------------- Escala do preview (para caber os dois formatos na coluna) ----------------
+     A transformação vive no ancestral #menu-scale. Como o html2canvas herda essa
+     escala, a exportação (renderPng) repõe temporariamente --preview-scale:1 para
+     captar sempre à resolução nativa (794x1123 / 1080x1920). */
+  const NATIVE_W = { print: 794, story: 1080 };
+  const NATIVE_H = { print: 1123, story: 1920 };
+  function updatePreviewScale() {
+    if (!el.menuWrap || !el.menuScale) return;
+    const nativeW = NATIVE_W[state.format] || NATIVE_W.print;
+    const nativeH = NATIVE_H[state.format] || NATIVE_H.print;
+    const avail = el.menuWrap.clientWidth;
+    const scale = avail > 0 ? Math.min(1, avail / nativeW) : 1;
+    el.menuWrap.style.setProperty("--preview-scale", scale.toFixed(4));
+    el.menuWrap.style.height = Math.round(nativeH * scale) + "px";
+  }
+
+  /* ---------------- Cabeçalho do preview e botões de ação por formato ---------------- */
+  function updatePreviewChrome() {
+    if (el.previewHint) {
+      el.previewHint.textContent =
+        state.format === "story"
+          ? "Pré-visualização — story 9:16 para Instagram/Facebook 👇"
+          : "Pré-visualização — folha A4, pronta a imprimir 👇";
+    }
+    if (el.btnPrint) {
+      el.btnPrint.textContent = state.format === "story" ? "📤 Partilhar" : "🖨️ Imprimir / PDF";
     }
   }
 
@@ -559,6 +719,20 @@
 
   el.btnImage.addEventListener("click", exportImage);
 
+  // Seletor de formato (Imprimir A4 / Story 9:16)
+  if (el.formatToggle) {
+    el.formatToggle.querySelectorAll(".format-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const format = btn.getAttribute("data-format") === "story" ? "story" : "print";
+        if (format === state.format) return;
+        state.format = format;
+        renderTemplates();
+        updatePreviewChrome();
+        onChange(false);
+      });
+    });
+  }
+
   /* ---------------- Modo claro/escuro da app ---------------- */
   function applyUiTheme(mode) {
     // mode: "light" | "dark" | null (segue o sistema)
@@ -627,19 +801,32 @@
     return "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0;
   }
 
-  // Renderiza o menu para um dataURL PNG
+  // Renderiza o menu para um dataURL PNG (fundo branco no print; no story é o
+  // próprio template que pinta o fundo, por isso não se força cor nenhuma).
+  // Importante: o html2canvas herda a escala de pré-visualização do ancestral
+  // (#menu-scale), por isso força-se --preview-scale:1 durante a captura para
+  // exportar sempre à resolução nativa (A4 / 1080×1920) e evitar que o texto
+  // perca os espaços quando o preview está reduzido.
   function renderPng(btn) {
     if (typeof window.html2canvas !== "function") {
       return Promise.reject(new Error("html2canvas indisponível"));
     }
     var prev;
     if (btn) { prev = btn.textContent; btn.textContent = "⏳ A gerar…"; btn.disabled = true; }
+    var bg = state.format === "story" ? null : "#ffffff";
+    var prevScale = el.menuWrap.style.getPropertyValue("--preview-scale");
+    el.menuWrap.style.setProperty("--preview-scale", "1");
+    void el.menu.offsetWidth; // força reflow para a captura sair à escala nativa
+    function restore() {
+      if (prevScale) el.menuWrap.style.setProperty("--preview-scale", prevScale);
+      else updatePreviewScale();
+    }
     return window
-      .html2canvas(el.menu, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false })
+      .html2canvas(el.menu, { scale: 2, backgroundColor: bg, useCORS: true, logging: false })
       .then(function (canvas) { return canvas.toDataURL("image/png"); })
       .then(
-        function (url) { if (btn) { btn.textContent = prev; btn.disabled = false; } return url; },
-        function (err) { if (btn) { btn.textContent = prev; btn.disabled = false; } throw err; }
+        function (url) { restore(); if (btn) { btn.textContent = prev; btn.disabled = false; } return url; },
+        function (err) { restore(); if (btn) { btn.textContent = prev; btn.disabled = false; } throw err; }
       );
   }
 
@@ -650,14 +837,37 @@
       .catch(function () { toast(RESTRICTED_MSG); });
   }
 
-  // Botão "Imprimir / PDF"
+  // Botão "Imprimir / PDF" (print) ou "Partilhar" (story)
   function printMenu() {
+    if (state.format === "story") { shareImage(el.btnPrint); return; }
     // Página normal (alojada ou ficheiro): impressão nativa, texto nítido
     if (!inIframe()) { window.print(); return; }
     // Dentro da iframe do artefacto: imprimir a partir da imagem
     renderPng(el.btnPrint)
       .then(function (url) { printFromImage(url); })
       .catch(function () { toast(RESTRICTED_MSG); });
+  }
+
+  // Botão "Partilhar" (story) — usa a Web Share API com ficheiro quando disponível;
+  // sem suporte, cai na modal de guardar (mesmo caminho de recurso do print).
+  function shareImage(btn) {
+    var dataUrl;
+    renderPng(btn)
+      .then(function (url) {
+        dataUrl = url;
+        return fetch(url).then(function (res) { return res.blob(); });
+      })
+      .then(function (blob) {
+        var file = new File([blob], fileName(), { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: "Prato do Dia" });
+        }
+        openModal(dataUrl);
+      })
+      .catch(function (err) {
+        if (err && err.name === "AbortError") return; // utilizador cancelou a partilha
+        toast(RESTRICTED_MSG);
+      });
   }
 
   // Abre a imagem numa janela A4 e manda imprimir; se falhar, mostra a modal
@@ -711,7 +921,8 @@
       .normalize("NFD").replace(/[̀-ͯ]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    return `${base}-${state.date || todayISO()}.png`;
+    const suffix = state.format === "story" ? "story" : "a4";
+    return `${base}-${state.date || todayISO()}-${suffix}.png`;
   }
 
   /* ============================================================
@@ -731,6 +942,7 @@
     state.soup = day ? day.soup || "" : "";
     state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
     fillEditor();
+    updatePreviewChrome();
     onChange(false);
   }
 
@@ -823,9 +1035,14 @@
   fillEditor();
   bindSimpleInputs();
   rebuildSuggestions();
+  rebuildPhraseSuggestions();
+  updatePreviewChrome();
   renderMenu();
-  // Reajusta se a janela mudar de tamanho (o A4 pode ser escalado no ecrã)
-  window.addEventListener("resize", autoFit);
+  // Reajusta se a janela mudar de tamanho (o preview é escalado para caber a coluna)
+  window.addEventListener("resize", function () {
+    autoFit();
+    updatePreviewScale();
+  });
 
   // PWA: funciona offline e pode ser instalada no ecrã inicial.
   // Só é possível em https:// ou localhost — em file:// o registo falha e ignora-se.

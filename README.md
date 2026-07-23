@@ -2,7 +2,7 @@
 
 App simples para o restaurante escrever os **pratos do dia** numa interface intuitiva
 e gerar automaticamente um **menu bonito** para mostrar aos clientes — pronto a
-imprimir, exportar em PDF ou partilhar como imagem.
+**imprimir em A4** ou a **publicar nos stories do Instagram e Facebook**.
 
 Feita para ser fácil de usar por qualquer pessoa, sem instalação e **sem precisar de internet**.
 
@@ -18,34 +18,41 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 1. Abre o ficheiro **`index.html`** (basta fazer duplo clique — abre no navegador).
 2. À esquerda, escreve o dia:
    - **Dia** — cada data guarda o seu menu. Usa **‹ ›** ou o botão **Hoje** para navegar; podes preparar o menu de amanhã sem perder o de hoje.
-   - Nome do restaurante e frase (só é preciso na primeira vez — fica guardado).
+   - **Marca** — logótipo, nome e frase do restaurante. Define-se **uma vez** e fica em todos os menus (o nome e a frase até sugerem o que já usaste).
    - **Sopa do dia**.
    - **Pratos disponíveis** — uma lista simples. Adiciona com **＋** (ou carrega em **Enter** num prato para criar o seguinte), reordena com **▲▼** e remove com **✕**. Enquanto escreves, a app sugere pratos e sopas de dias anteriores.
    - **📋 Copiar de ontem** — recupera o último menu guardado para só ajustares o que mudou.
    - Preço do menu (opcional).
-3. À direita vês a **pré-visualização em tempo real** de como o menu vai ficar na folha A4.
+   - **Modelo do menu** — escolhe onde vais usar (**🖨️ Imprimir A4** ou **📱 Story 9:16**) e um dos **4 templates** de cada formato.
+3. À direita vês a **pré-visualização em tempo real** no formato escolhido (folha A4 ou story 9:16).
 4. Quando estiver pronto, usa os botões no topo:
-   - **🖨️ Imprimir / PDF** — imprime em A4 ou guarda como PDF (no diálogo de impressão, escolhe "Guardar como PDF").
-   - **🖼️ Guardar imagem** — descarrega o menu em PNG, ideal para enviar no WhatsApp ou pôr nas redes sociais.
-   - **🧹 Limpar dia** — apaga os pratos para começar um novo dia (mantém o nome do restaurante e o tema). Se te enganares, tens uns segundos para carregar em **Anular**.
+   - **🖨️ Imprimir / PDF** (formato Imprimir) — imprime em A4 ou guarda como PDF (no diálogo, escolhe "Guardar como PDF").
+   - **📤 Partilhar** (formato Story) — no telemóvel abre logo a partilha do sistema (Instagram, Facebook, WhatsApp…).
+   - **🖼️ Guardar imagem** — descarrega o menu em PNG à resolução certa (A4, ou 1080×1920 para stories).
+   - **🧹 Limpar dia** — apaga os pratos para começar um novo dia (mantém a marca e o template). Se te enganares, tens uns segundos para carregar em **Anular**.
 
 ## Funcionalidades
 
 - ✅ Interface intuitiva, toda em português. Só se escreve a sopa e os pratos.
+- ✅ **Dois formatos**: **Imprimir (A4)** e **Story (9:16)** para Instagram/Facebook.
+- ✅ **8 templates** que mudam cor, tipografia e disposição:
+  - Imprimir (fundo branco): **Clássico**, **Moderno**, **Bistrô**, **Tabuleta**.
+  - Story (criativos): **Ardósia**, **Vibrante**, **Fresco**, **Editorial**.
+- ✅ **Logótipo** do restaurante (carrega uma imagem — fica em todos os menus).
+- ✅ **Marca** definida uma vez (logótipo, nome, frase) com **sugestões** de frases já usadas.
 - ✅ **Um menu por data** — a app abre sempre no dia de hoje e cada dia guarda o seu menu (últimos 60 dias).
 - ✅ Botão "📋 Copiar de ontem" para recuperar o último menu guardado.
 - ✅ **Cópia de segurança** — exporta e importa todos os dados num ficheiro JSON.
 - ✅ **Sugestões automáticas** de pratos e sopas já usados, enquanto se escreve.
 - ✅ Reordenar pratos com ▲▼ e "Limpar dia" com opção de **Anular**.
 - ✅ Aviso quando há pratos a mais e o texto do menu ficaria pequeno.
-- ✅ Design "Azulejo" com tipografia Fraunces (incluída, funciona offline).
-- ✅ Pré-visualização instantânea do menu.
-- ✅ **Encaixe automático numa folha A4** — o espaçamento adapta-se a qualquer número de pratos.
-- ✅ 8 temas visuais para o menu (Azulejo, Linho, Ardósia, Horta, Mar, Vinho, Café, Papel).
+- ✅ Tipografia própria (Fraunces, Archivo e Oswald) **incluída, funciona offline**.
+- ✅ Pré-visualização instantânea no formato escolhido.
+- ✅ **Encaixe automático** — o espaçamento adapta-se a qualquer número de pratos, em A4 ou 9:16.
 - ✅ Modo claro/escuro na própria app (botão 🌙 / ☀️).
-- ✅ Data automática, escrita por extenso ("Quarta-feira, 22 de julho de 2026").
-- ✅ Impressão em A4 e exportação para PDF.
-- ✅ Exportação para imagem PNG para partilhar.
+- ✅ Data automática, escrita por extenso ("Quinta-feira, 23 de julho de 2026").
+- ✅ Impressão em A4, exportação para PDF e **partilha direta** nos stories (Web Share).
+- ✅ Exportação para imagem PNG à resolução nativa (A4 ou 1080×1920).
 - ✅ Guarda tudo automaticamente no navegador (não perde o trabalho ao fechar).
 - ✅ Funciona offline, sem instalação nem servidor.
 - ✅ **PWA** — quando alojada online (https), instala-se no telemóvel/tablet como uma app, com ícone próprio e offline garantido.
@@ -71,7 +78,7 @@ app.js                     → lógica: editor, pré-visualização, gravação,
 manifest.json              → manifesto PWA (nome, ícones, cores de instalação)
 sw.js                      → service worker: pré-carrega tudo para funcionar offline
 assets/html2canvas.min.js  → biblioteca para gerar a imagem PNG (incluída, offline)
-assets/fonts/*.woff2       → tipografia Fraunces (incluída, funciona offline)
+assets/fonts/*.woff2       → tipografia Fraunces, Archivo e Oswald (incluídas, offline)
 assets/icons/*.png         → ícones da app instalada (192, 512 e maskable)
 ```
 
