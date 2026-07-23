@@ -180,6 +180,40 @@ html, body {
 /* ---------------- Editor ---------------- */
 .editor { display: flex; flex-direction: column; gap: 18px; }
 
+/* Interruptor de modo (Prato do dia / Sobremesas) — segmentado, maior e mais
+   destacado que o .format-toggle, porque decide o que o resto do editor mostra. */
+.kind-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.kind-btn {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 14px;
+  border-radius: calc(var(--radius) - 4px);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.kind-btn:hover { color: var(--ink); background: var(--panel-2); }
+.kind-btn.is-active { background: var(--primary); color: #fff; box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 35%, transparent); }
+
+/* Visibilidade dos cartões/campos por modo — controlada por [data-kind] no .editor */
+.editor[data-kind="prato"] .card--sobremesas,
+.editor[data-kind="prato"] .field--sobremesas { display: none; }
+.editor[data-kind="sobremesas"] .card--prato,
+.editor[data-kind="sobremesas"] .field--prato { display: none; }
+
 .card {
   background: var(--panel);
   border: 1px solid var(--line);

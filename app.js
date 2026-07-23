@@ -37,12 +37,14 @@
     return state.format === "story" ? state.templateStory : state.templatePrint;
   }
 
-  // Definições globais por omissão (sem soup/dishes/date — isso vive no histórico)
+  // Definições globais por omissão (sem soup/dishes/desserts/date — isso vive no histórico)
   function defaultSettings() {
     return {
+      kind: "prato",
       restaurant: "",
       tagline: "",
       price: "",
+      dessertsPrice: "",
       includes: DEFAULT_INCLUDES,
       footer: "Bom apetite!",
       format: "print",
@@ -60,9 +62,11 @@
     const d = defaultSettings();
     if (!s || typeof s !== "object") return d;
     return {
+      kind: s.kind === "sobremesas" ? "sobremesas" : "prato",
       restaurant: typeof s.restaurant === "string" ? s.restaurant : d.restaurant,
       tagline: typeof s.tagline === "string" ? s.tagline : d.tagline,
       price: typeof s.price === "string" ? s.price : d.price,
+      dessertsPrice: typeof s.dessertsPrice === "string" ? s.dessertsPrice : d.dessertsPrice,
       includes: typeof s.includes === "string" && s.includes ? s.includes : d.includes,
       footer: typeof s.footer === "string" ? s.footer : d.footer,
       format: s.format === "story" ? "story" : "print",
@@ -77,9 +81,11 @@
 
   function extractSettings(s) {
     return {
+      kind: s.kind,
       restaurant: s.restaurant,
       tagline: s.tagline,
       price: s.price,
+      dessertsPrice: s.dessertsPrice,
       includes: s.includes,
       footer: s.footer,
       format: s.format,
@@ -124,7 +130,7 @@
             const soup = String(v2.soup || "").trim();
             const dishes = Array.isArray(v2.dishes) ? v2.dishes.map((d) => String(d || "").trim()).filter((d) => d) : [];
             if (soup || dishes.length > 0) {
-              history.days[v2.date] = { soup: soup, dishes: dishes };
+              history.days[v2.date] = { soup: soup, dishes: dishes, desserts: [] };
               localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
             }
           }
@@ -148,6 +154,7 @@
       date: date,
       soup: day ? day.soup || "" : "",
       dishes: day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""],
+      desserts: day && Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : ["", "", ""],
     });
   }
 
@@ -193,6 +200,17 @@
   }
 
   /* ---------------- Histórico de menus (p/ "copiar de ontem" e sugestões) ---------------- */
+  // Normaliza o registo de um dia: soup (string) + dishes/desserts (string[], já
+  // filtrados/trim). Dias antigos sem "desserts" (de versões anteriores) ficam com [].
+  function sanitizeDay(day) {
+    if (!day || typeof day !== "object") return { soup: "", dishes: [], desserts: [] };
+    return {
+      soup: typeof day.soup === "string" ? day.soup.trim() : "",
+      dishes: Array.isArray(day.dishes) ? day.dishes.map((d) => String(d || "").trim()).filter((d) => d) : [],
+      desserts: Array.isArray(day.desserts) ? day.desserts.map((d) => String(d || "").trim()).filter((d) => d) : [],
+    };
+  }
+
   function loadHistory() {
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
@@ -200,22 +218,28 @@
       if (!data || typeof data !== "object" || !data.days || typeof data.days !== "object") {
         return { days: {} };
       }
-      return data;
+      const days = {};
+      Object.keys(data.days).forEach((date) => {
+        days[date] = sanitizeDay(data.days[date]);
+      });
+      return { days: days };
     } catch (e) {
       return { days: {} };
     }
   }
 
-  // Grava o dia atual no histórico (poda o dia se ficar vazio) e limita a 60 datas
+  // Grava o dia atual no histórico (poda o dia só quando sopa, pratos E sobremesas
+  // ficam todos vazios) e limita a 60 datas
   function saveHistory() {
     try {
       const history = loadHistory();
       const soup = (state.soup || "").trim();
       const dishes = state.dishes.map((d) => d.trim()).filter((d) => d);
-      if (!soup && dishes.length === 0) {
+      const desserts = state.desserts.map((d) => d.trim()).filter((d) => d);
+      if (!soup && dishes.length === 0 && desserts.length === 0) {
         delete history.days[state.date];
       } else {
-        history.days[state.date] = { soup: soup, dishes: dishes };
+        history.days[state.date] = { soup: soup, dishes: dishes, desserts: desserts };
       }
       const dates = Object.keys(history.days).sort(); // ISO ordena bem lexicograficamente
       while (dates.length > HISTORY_MAX_DAYS) {
@@ -229,6 +253,8 @@
 
   /* ---------------- Referências ao DOM ---------------- */
   const el = {
+    editor: document.querySelector(".editor"),
+    kindToggle: document.getElementById("kind-toggle"),
     restaurant: document.getElementById("in-restaurant"),
     tagline: document.getElementById("in-tagline"),
     date: document.getElementById("in-date"),
@@ -239,14 +265,19 @@
     price: document.getElementById("in-price"),
     includes: document.getElementById("in-includes"),
     footer: document.getElementById("in-footer"),
+    dessertsPrice: document.getElementById("in-desserts-price"),
     dishes: document.getElementById("dishes"),
     dishCount: document.getElementById("dish-count"),
     dishSuggestions: document.getElementById("dish-suggestions"),
+    dessertsList: document.getElementById("desserts-list"),
+    dessertCount: document.getElementById("dessert-count"),
+    dessertSuggestions: document.getElementById("dessert-suggestions"),
     soupSuggestions: document.getElementById("soup-suggestions"),
     restaurantSuggestions: document.getElementById("restaurant-suggestions"),
     taglineSuggestions: document.getElementById("tagline-suggestions"),
     footerSuggestions: document.getElementById("footer-suggestions"),
     btnCopyPrev: document.getElementById("btn-copy-prev"),
+    btnCopyPrevDesserts: document.getElementById("btn-copy-prev-desserts"),
     logoPreview: document.getElementById("logo-preview"),
     btnLogo: document.getElementById("btn-logo"),
     btnLogoRemove: document.getElementById("btn-logo-remove"),
@@ -257,6 +288,7 @@
     menuScale: document.getElementById("menu-scale"),
     menu: document.getElementById("menu"),
     addDish: document.getElementById("btn-add-dish"),
+    addDessert: document.getElementById("btn-add-dessert"),
     previewHint: document.getElementById("preview-hint"),
     btnPrint: document.getElementById("btn-print"),
     btnImage: document.getElementById("btn-image"),
@@ -275,6 +307,27 @@
     inImport: document.getElementById("in-import"),
   };
 
+  // Mapa que generaliza a lista de itens do editor (pratos ou sobremesas):
+  // cada modo tem o seu array em `state`, o seu contentor no DOM e o seu datalist.
+  const LIST_CONFIG = {
+    prato: {
+      arrKey: "dishes",
+      container: el.dishes,
+      datalist: "dish-suggestions",
+      placeholder: "Nome do prato",
+      countEl: el.dishCount,
+      aria: "Prato",
+    },
+    sobremesas: {
+      arrKey: "desserts",
+      container: el.dessertsList,
+      datalist: "dessert-suggestions",
+      placeholder: "Nome da sobremesa",
+      countEl: el.dessertCount,
+      aria: "Sobremesa",
+    },
+  };
+
   /* ---------------- Preencher o editor ---------------- */
   function fillEditor() {
     el.restaurant.value = state.restaurant;
@@ -284,35 +337,42 @@
     el.price.value = state.price;
     el.includes.value = state.includes;
     el.footer.value = state.footer;
-    renderDishes();
+    el.dessertsPrice.value = state.dessertsPrice;
+    el.editor.setAttribute("data-kind", state.kind);
+    renderKindToggle();
+    renderList("prato");
+    renderList("sobremesas");
     renderLogoControl();
     renderTemplates();
   }
 
-  // Mantém o foco no mesmo prato enquanto se escreve (não recria a lista toda)
-  function renderDishes(focusIndex) {
-    el.dishes.innerHTML = "";
-    state.dishes.forEach((name, i) => {
+  // Lista genérica de itens (pratos OU sobremesas, consoante `kind`) — mantém o
+  // foco no mesmo item enquanto se escreve (não recria a lista toda).
+  function renderList(kind, focusIndex) {
+    const cfg = LIST_CONFIG[kind];
+    const arr = state[cfg.arrKey];
+    cfg.container.innerHTML = "";
+    arr.forEach((name, i) => {
       const row = document.createElement("div");
       row.className = "dish-row";
       row.innerHTML = `
         <span class="dish-row__num">${i + 1}.</span>
-        <input type="text" class="dish-name" list="dish-suggestions" value="${esc(name)}" placeholder="Nome do prato" aria-label="Prato ${i + 1}" />
-        <button class="dish-move" type="button" data-dir="-1" title="Mover para cima" aria-label="Mover prato para cima">▲</button>
-        <button class="dish-move" type="button" data-dir="1" title="Mover para baixo" aria-label="Mover prato para baixo">▼</button>
-        <button class="dish-remove" type="button" title="Remover prato">✕</button>
+        <input type="text" class="dish-name" list="${cfg.datalist}" value="${esc(name)}" placeholder="${esc(cfg.placeholder)}" aria-label="${esc(cfg.aria)} ${i + 1}" />
+        <button class="dish-move" type="button" data-dir="-1" title="Mover para cima" aria-label="Mover ${esc(cfg.aria.toLowerCase())} para cima">▲</button>
+        <button class="dish-move" type="button" data-dir="1" title="Mover para baixo" aria-label="Mover ${esc(cfg.aria.toLowerCase())} para baixo">▼</button>
+        <button class="dish-remove" type="button" title="Remover ${esc(cfg.aria.toLowerCase())}">✕</button>
       `;
       const input = row.querySelector(".dish-name");
       input.addEventListener("input", (e) => {
-        state.dishes[i] = e.target.value;
+        arr[i] = e.target.value;
         onChange(false);
       });
-      // Enter cria um novo prato a seguir
+      // Enter cria um novo item a seguir
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          state.dishes.splice(i + 1, 0, "");
-          renderDishes(i + 1);
+          arr.splice(i + 1, 0, "");
+          renderList(kind, i + 1);
           onChange(false);
         }
       });
@@ -320,33 +380,56 @@
       row.querySelectorAll(".dish-move").forEach((btn) => {
         const dir = parseInt(btn.getAttribute("data-dir"), 10);
         const isFirst = i === 0;
-        const isLast = i === state.dishes.length - 1;
+        const isLast = i === arr.length - 1;
         if ((dir === -1 && isFirst) || (dir === 1 && isLast)) {
           btn.disabled = true;
         }
         btn.addEventListener("click", () => {
           const newIndex = i + dir;
-          const temp = state.dishes[i];
-          state.dishes[i] = state.dishes[newIndex];
-          state.dishes[newIndex] = temp;
-          renderDishes(newIndex);
+          const temp = arr[i];
+          arr[i] = arr[newIndex];
+          arr[newIndex] = temp;
+          renderList(kind, newIndex);
           onChange(false);
         });
       });
       row.querySelector(".dish-remove").addEventListener("click", () => {
-        state.dishes.splice(i, 1);
-        if (state.dishes.length === 0) state.dishes.push("");
-        renderDishes();
+        arr.splice(i, 1);
+        if (arr.length === 0) arr.push("");
+        renderList(kind);
         onChange(false);
       });
-      el.dishes.appendChild(row);
+      cfg.container.appendChild(row);
     });
-    updateDishCount();
+    updateListCount(kind);
 
     if (focusIndex != null) {
-      const inputs = el.dishes.querySelectorAll(".dish-name");
+      const inputs = cfg.container.querySelectorAll(".dish-name");
       if (inputs[focusIndex]) inputs[focusIndex].focus();
     }
+  }
+
+  // Pinta o botão ativo do interruptor de modo (Prato do dia / Sobremesas)
+  function renderKindToggle() {
+    if (!el.kindToggle) return;
+    el.kindToggle.querySelectorAll(".kind-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.getAttribute("data-kind") === state.kind);
+    });
+  }
+
+  // Muda o modo ativo: não recarrega dados (soup/dishes/desserts já vivem todos
+  // em `state`) — só muda o que se mostra no editor e o que renderMenu() desenha.
+  function switchKind(kind) {
+    if (kind !== "prato" && kind !== "sobremesas") return;
+    if (kind === state.kind) return;
+    state.kind = kind;
+    el.editor.setAttribute("data-kind", kind);
+    renderKindToggle();
+    renderList(kind);
+    renderMenu();
+    updateDishCount();
+    updatePreviewChrome();
+    onChange(false);
   }
 
   // Pinta o estado ativo do seletor de formato e gera os chips de template do formato ativo
@@ -469,6 +552,8 @@
     const dishList = [];
     const soupSeen = new Set();
     const soupList = [];
+    const dessertSeen = new Set();
+    const dessertList = [];
 
     dates.forEach((date) => {
       const day = history.days[date];
@@ -491,13 +576,28 @@
           dishList.push(name);
         }
       });
+      (Array.isArray(day.desserts) ? day.desserts : []).forEach((dessert) => {
+        if (dessertList.length >= MAX_DISH_SUGGESTIONS) return;
+        const name = String(dessert || "").trim();
+        if (!name) return;
+        const key = name.toLowerCase();
+        if (!dessertSeen.has(key)) {
+          dessertSeen.add(key);
+          dessertList.push(name);
+        }
+      });
     });
 
     el.dishSuggestions.innerHTML = dishList.map((d) => `<option value="${esc(d)}"></option>`).join("");
     el.soupSuggestions.innerHTML = soupList.map((s) => `<option value="${esc(s)}"></option>`).join("");
+    if (el.dessertSuggestions) {
+      el.dessertSuggestions.innerHTML = dessertList.map((d) => `<option value="${esc(d)}"></option>`).join("");
+    }
   }
 
   /* ---------------- Render do menu (pré-visualização) ---------------- */
+  // Ramifica por state.kind: os dois modos partilham cabeçalho/marca, divisória,
+  // data, templates e formatos — só o corpo do menu (eyebrow, itens, preço) muda.
   function renderMenu() {
     const m = state;
     el.menu.setAttribute("data-format", m.format);
@@ -511,39 +611,69 @@
     </header>`;
 
     html += `<div class="menu__rule"><i></i></div>`;
-    html += `<p class="menu__eyebrow">Prato do Dia</p>`;
-    if (m.date) html += `<p class="menu__date">${esc(formatDatePT(m.date))}</p>`;
 
-    // Bloco "o menu inclui" + sopa
-    const includes = m.includes.trim() || DEFAULT_INCLUDES;
-    html += `<div class="menu__includes">
-      <p class="menu__includes-label">O menu inclui</p>
-      <p class="menu__includes-value">${esc(includes)}</p>
-      ${m.soup.trim() ? `<p class="menu__soup"><span>Sopa do dia</span>${esc(m.soup)}</p>` : ""}
-    </div>`;
+    if (m.kind === "sobremesas") {
+      html += `<p class="menu__eyebrow">Sobremesas</p>`;
+      if (m.date) html += `<p class="menu__date">${esc(formatDatePT(m.date))}</p>`;
 
-    // Pratos disponíveis
-    const dishes = m.dishes.filter((d) => d.trim());
-    if (dishes.length > 0) {
-      html += `<div class="menu__dishes-block">
-        <p class="menu__dishes-title">Pratos à escolha</p>
-        <div class="menu__dishes">
-          ${dishes.map((d) => `<div class="menu__dish">${esc(d)}</div>`).join("")}
-        </div>
-      </div>`;
+      // Sobremesas do dia (sem "o menu inclui" nem sopa)
+      const desserts = m.desserts.filter((d) => d.trim());
+      if (desserts.length > 0) {
+        html += `<div class="menu__dishes-block">
+          <p class="menu__dishes-title">Sobremesas do dia</p>
+          <div class="menu__dishes">
+            ${desserts.map((d) => `<div class="menu__dish">${esc(d)}</div>`).join("")}
+          </div>
+        </div>`;
+      } else {
+        html += `<p class="menu__empty">Escreve as sobremesas de hoje no editor à esquerda para veres o menu aparecer aqui.</p>`;
+      }
+
+      if (m.dessertsPrice.trim()) {
+        html += `<div class="menu__price-box">
+          <p class="menu__price-label">Sobremesas</p>
+          <p class="menu__price-value">${esc(m.dessertsPrice)}</p>
+        </div>`;
+      }
+
+      if (m.footer.trim()) {
+        html += `<footer class="menu__footer">${esc(m.footer)}</footer>`;
+      }
     } else {
-      html += `<p class="menu__empty">Escreve os pratos disponíveis no editor à esquerda para veres o menu aparecer aqui.</p>`;
-    }
+      html += `<p class="menu__eyebrow">Prato do Dia</p>`;
+      if (m.date) html += `<p class="menu__date">${esc(formatDatePT(m.date))}</p>`;
 
-    if (m.price.trim()) {
-      html += `<div class="menu__price-box">
-        <p class="menu__price-label">Menu completo</p>
-        <p class="menu__price-value">${esc(m.price)}</p>
+      // Bloco "o menu inclui" + sopa
+      const includes = m.includes.trim() || DEFAULT_INCLUDES;
+      html += `<div class="menu__includes">
+        <p class="menu__includes-label">O menu inclui</p>
+        <p class="menu__includes-value">${esc(includes)}</p>
+        ${m.soup.trim() ? `<p class="menu__soup"><span>Sopa do dia</span>${esc(m.soup)}</p>` : ""}
       </div>`;
-    }
 
-    if (m.footer.trim()) {
-      html += `<footer class="menu__footer">${esc(m.footer)}</footer>`;
+      // Pratos disponíveis
+      const dishes = m.dishes.filter((d) => d.trim());
+      if (dishes.length > 0) {
+        html += `<div class="menu__dishes-block">
+          <p class="menu__dishes-title">Pratos à escolha</p>
+          <div class="menu__dishes">
+            ${dishes.map((d) => `<div class="menu__dish">${esc(d)}</div>`).join("")}
+          </div>
+        </div>`;
+      } else {
+        html += `<p class="menu__empty">Escreve os pratos disponíveis no editor à esquerda para veres o menu aparecer aqui.</p>`;
+      }
+
+      if (m.price.trim()) {
+        html += `<div class="menu__price-box">
+          <p class="menu__price-label">Menu completo</p>
+          <p class="menu__price-value">${esc(m.price)}</p>
+        </div>`;
+      }
+
+      if (m.footer.trim()) {
+        html += `<footer class="menu__footer">${esc(m.footer)}</footer>`;
+      }
     }
 
     el.menu.innerHTML = html;
@@ -552,12 +682,13 @@
   }
 
   /* ---------------- Auto-ajuste à folha/canvas ----------------
-     Escolhe um fator inicial pelo nº de pratos (poucos → maior,
-     muitos → menor) e depois reduz até caber na folha (print) ou
-     no canvas (story). */
+     Escolhe um fator inicial pelo nº de itens da lista do modo ativo
+     (poucos → maior, muitos → menor) e depois reduz até caber na
+     folha (print) ou no canvas (story). */
   function autoFit() {
     const menu = el.menu;
-    const count = state.dishes.filter((d) => d.trim()).length;
+    const activeArr = state.kind === "sobremesas" ? state.desserts : state.dishes;
+    const count = activeArr.filter((d) => d.trim()).length;
 
     let fit;
     if (count <= 4) fit = 1.28;
@@ -602,10 +733,17 @@
   /* ---------------- Cabeçalho do preview e botões de ação por formato ---------------- */
   function updatePreviewChrome() {
     if (el.previewHint) {
-      el.previewHint.textContent =
-        state.format === "story"
-          ? "Pré-visualização — story 9:16 para Instagram/Facebook 👇"
-          : "Pré-visualização — folha A4, pronta a imprimir 👇";
+      if (state.kind === "sobremesas") {
+        el.previewHint.textContent =
+          state.format === "story"
+            ? "Pré-visualização das sobremesas — story 9:16 para Instagram/Facebook 👇"
+            : "Pré-visualização das sobremesas — folha A4, pronta a imprimir 👇";
+      } else {
+        el.previewHint.textContent =
+          state.format === "story"
+            ? "Pré-visualização — story 9:16 para Instagram/Facebook 👇"
+            : "Pré-visualização — folha A4, pronta a imprimir 👇";
+      }
     }
     if (el.btnPrint) {
       el.btnPrint.textContent = state.format === "story" ? "📤 Partilhar" : "🖨️ Imprimir / PDF";
@@ -613,15 +751,25 @@
   }
 
   /* ---------------- Fluxo de alterações ---------------- */
+  // Atualiza a badge de contagem de cada lista (pratos e sobremesas) — mantém as
+  // duas coerentes mesmo que só uma esteja visível no modo ativo.
+  function updateListCount(kind) {
+    const cfg = LIST_CONFIG[kind];
+    cfg.countEl.textContent = String(state[cfg.arrKey].filter((d) => d.trim()).length);
+  }
   function updateDishCount() {
-    el.dishCount.textContent = String(state.dishes.filter((d) => d.trim()).length);
+    updateListCount("prato");
+    updateListCount("sobremesas");
   }
 
-  function onChange(rerenderDishes = true) {
+  function onChange(rerenderLists = true) {
     save();
     updateDishCount();
     renderMenu();
-    if (rerenderDishes) renderDishes();
+    if (rerenderLists) {
+      renderList("prato");
+      renderList("sobremesas");
+    }
   }
 
   function bindSimpleInputs() {
@@ -632,6 +780,7 @@
       ["price", el.price],
       ["includes", el.includes],
       ["footer", el.footer],
+      ["dessertsPrice", el.dessertsPrice],
     ];
     map.forEach(([key, node]) => {
       node.addEventListener("input", () => {
@@ -666,6 +815,8 @@
 
   // Muda o dia selecionado: o conteúdo do dia anterior já ficou persistido
   // (o save() corre a cada alteração), por isso basta carregar o novo dia.
+  // soup, dishes E desserts vêm todos do registo do dia — os dois modos ficam
+  // sempre com os seus dados prontos, mesmo que só um esteja visível agora.
   function switchDay(newDate) {
     if (!newDate || newDate === state.date) return;
     state.date = newDate;
@@ -673,18 +824,28 @@
     const day = history.days[state.date];
     state.soup = day ? day.soup || "" : "";
     state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
+    state.desserts = day && Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : ["", "", ""];
     el.date.value = state.date;
     el.soup.value = state.soup;
-    renderDishes();
+    renderList("prato");
+    renderList("sobremesas");
     onChange(false);
   }
 
   /* ---------------- Ações ---------------- */
   el.addDish.addEventListener("click", () => {
     state.dishes.push("");
-    renderDishes(state.dishes.length - 1);
+    renderList("prato", state.dishes.length - 1);
     onChange(false);
   });
+
+  if (el.addDessert) {
+    el.addDessert.addEventListener("click", () => {
+      state.desserts.push("");
+      renderList("sobremesas", state.desserts.length - 1);
+      onChange(false);
+    });
+  }
 
   el.btnPrint.addEventListener("click", printMenu);
 
@@ -715,29 +876,75 @@
     state.soup = day.soup || "";
     state.dishes = Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : [""];
     el.soup.value = state.soup;
-    renderDishes();
+    renderList("prato");
     onChange(false);
     toast(`Copiado o menu de ${formatDatePT(prevDate)}.`);
   });
 
-  el.btnClear.addEventListener("click", () => {
-    const snapshot = { soup: state.soup, dishes: state.dishes.slice() };
-    state.soup = "";
-    state.dishes = ["", "", ""];
-    fillEditor();
-    onChange(false);
-    toast("Dia limpo.", {
-      label: "Anular",
-      onClick: function () {
-        state.soup = snapshot.soup;
-        state.dishes = snapshot.dishes;
-        fillEditor();
-        onChange(false);
-      },
+  // Copia as sobremesas do dia guardado mais recente anterior à data atual COM sobremesas
+  if (el.btnCopyPrevDesserts) {
+    el.btnCopyPrevDesserts.addEventListener("click", () => {
+      const history = loadHistory();
+      const prevDate = Object.keys(history.days)
+        .filter((d) => d < state.date && Array.isArray(history.days[d].desserts) && history.days[d].desserts.length > 0)
+        .sort()
+        .pop();
+      if (!prevDate) {
+        toast("Ainda não há nenhuma sobremesa anterior guardada.");
+        return;
+      }
+      const day = history.days[prevDate];
+      state.desserts = Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : [""];
+      renderList("sobremesas");
+      onChange(false);
+      toast(`Copiadas as sobremesas de ${formatDatePT(prevDate)}.`);
     });
+  }
+
+  // "Limpar dia" limpa só a lista do modo ativo — em prato limpa sopa+pratos,
+  // em sobremesas limpa as sobremesas. Anular repõe o snapshot do modo em que foi limpo.
+  el.btnClear.addEventListener("click", () => {
+    if (state.kind === "sobremesas") {
+      const snapshot = { desserts: state.desserts.slice() };
+      state.desserts = ["", "", ""];
+      fillEditor();
+      onChange(false);
+      toast("Dia limpo.", {
+        label: "Anular",
+        onClick: function () {
+          state.desserts = snapshot.desserts;
+          fillEditor();
+          onChange(false);
+        },
+      });
+    } else {
+      const snapshot = { soup: state.soup, dishes: state.dishes.slice() };
+      state.soup = "";
+      state.dishes = ["", "", ""];
+      fillEditor();
+      onChange(false);
+      toast("Dia limpo.", {
+        label: "Anular",
+        onClick: function () {
+          state.soup = snapshot.soup;
+          state.dishes = snapshot.dishes;
+          fillEditor();
+          onChange(false);
+        },
+      });
+    }
   });
 
   el.btnImage.addEventListener("click", exportImage);
+
+  // Interruptor de modo (Prato do dia / Sobremesas)
+  if (el.kindToggle) {
+    el.kindToggle.querySelectorAll(".kind-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switchKind(btn.getAttribute("data-kind"));
+      });
+    });
+  }
 
   // Seletor de formato (Imprimir A4 / Story 9:16)
   if (el.formatToggle) {
@@ -942,7 +1149,8 @@
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
     const suffix = state.format === "story" ? "story" : "a4";
-    return `${base}-${state.date || todayISO()}-${suffix}.png`;
+    const kindPart = state.kind === "sobremesas" ? "-sobremesas" : "";
+    return `${base}${kindPart}-${state.date || todayISO()}-${suffix}.png`;
   }
 
   /* ============================================================
@@ -961,6 +1169,7 @@
     const day = days[state.date];
     state.soup = day ? day.soup || "" : "";
     state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
+    state.desserts = day && Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : ["", "", ""];
     fillEditor();
     updatePreviewChrome();
     onChange(false);
@@ -1032,8 +1241,9 @@
       if (!day) return;
       const soup = typeof day.soup === "string" ? day.soup.trim() : "";
       const dishes = Array.isArray(day.dishes) ? day.dishes.map((d) => String(d || "").trim()).filter((d) => d) : [];
-      if (soup || dishes.length > 0) {
-        newDays[date] = { soup: soup, dishes: dishes };
+      const desserts = Array.isArray(day.desserts) ? day.desserts.map((d) => String(d || "").trim()).filter((d) => d) : [];
+      if (soup || dishes.length > 0 || desserts.length > 0) {
+        newDays[date] = { soup: soup, dishes: dishes, desserts: desserts };
       }
     });
 

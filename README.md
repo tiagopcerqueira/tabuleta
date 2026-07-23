@@ -34,6 +34,7 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 ## Funcionalidades
 
 - ✅ Interface intuitiva, toda em português. Só se escreve a sopa e os pratos.
+- ✅ **Dois geradores**: **Prato do dia** e **Sobremesas** — alterna no topo do editor. Cada um tem a sua lista diária independente; a marca e os templates são partilhados.
 - ✅ **Dois formatos**: **Imprimir (A4)** e **Story (9:16)** para Instagram/Facebook.
 - ✅ **8 templates** que mudam cor, tipografia e disposição:
   - Imprimir (fundo branco): **Clássico**, **Moderno**, **Bistrô**, **Tabuleta**.
