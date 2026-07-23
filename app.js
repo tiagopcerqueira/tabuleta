@@ -44,7 +44,6 @@
       restaurant: "",
       tagline: "",
       price: "",
-      dessertsPrice: "",
       includes: DEFAULT_INCLUDES,
       footer: "Bom apetite!",
       format: "print",
@@ -66,7 +65,6 @@
       restaurant: typeof s.restaurant === "string" ? s.restaurant : d.restaurant,
       tagline: typeof s.tagline === "string" ? s.tagline : d.tagline,
       price: typeof s.price === "string" ? s.price : d.price,
-      dessertsPrice: typeof s.dessertsPrice === "string" ? s.dessertsPrice : d.dessertsPrice,
       includes: typeof s.includes === "string" && s.includes ? s.includes : d.includes,
       footer: typeof s.footer === "string" ? s.footer : d.footer,
       format: s.format === "story" ? "story" : "print",
@@ -85,7 +83,6 @@
       restaurant: s.restaurant,
       tagline: s.tagline,
       price: s.price,
-      dessertsPrice: s.dessertsPrice,
       includes: s.includes,
       footer: s.footer,
       format: s.format,
@@ -144,6 +141,14 @@
     return defaultSettings();
   }
 
+  // Sobremesas são itens {name, price} — cada sobremesa tem o seu preço.
+  function emptyDesserts() {
+    return [{ name: "", price: "" }, { name: "", price: "" }, { name: "", price: "" }];
+  }
+  function copyDesserts(arr) {
+    return (Array.isArray(arr) ? arr : []).map((d) => ({ name: (d && d.name) || "", price: (d && d.price) || "" }));
+  }
+
   // Monta o estado inicial: definições (v3, com migração de v2 se necessário) + dia de hoje do histórico
   function buildInitialState() {
     const settings = loadSettings();
@@ -154,7 +159,7 @@
       date: date,
       soup: day ? day.soup || "" : "",
       dishes: day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""],
-      desserts: day && Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : ["", "", ""],
+      desserts: day && Array.isArray(day.desserts) && day.desserts.length ? copyDesserts(day.desserts) : emptyDesserts(),
     });
   }
 
@@ -200,14 +205,21 @@
   }
 
   /* ---------------- Histórico de menus (p/ "copiar de ontem" e sugestões) ---------------- */
-  // Normaliza o registo de um dia: soup (string) + dishes/desserts (string[], já
-  // filtrados/trim). Dias antigos sem "desserts" (de versões anteriores) ficam com [].
+  // Normaliza o registo de um dia: soup (string) + dishes (string[]) + desserts
+  // ({name, price}[], cada sobremesa tem o seu preço). Migração: sobremesas antigas
+  // guardadas como texto viram {name, price:""}; dias sem "desserts" ficam com [].
   function sanitizeDay(day) {
     if (!day || typeof day !== "object") return { soup: "", dishes: [], desserts: [] };
     return {
       soup: typeof day.soup === "string" ? day.soup.trim() : "",
       dishes: Array.isArray(day.dishes) ? day.dishes.map((d) => String(d || "").trim()).filter((d) => d) : [],
-      desserts: Array.isArray(day.desserts) ? day.desserts.map((d) => String(d || "").trim()).filter((d) => d) : [],
+      desserts: Array.isArray(day.desserts)
+        ? day.desserts
+            .map((d) => (typeof d === "string"
+              ? { name: d.trim(), price: "" }
+              : { name: String((d && d.name) || "").trim(), price: String((d && d.price) || "").trim() }))
+            .filter((d) => d.name)
+        : [],
     };
   }
 
@@ -235,7 +247,9 @@
       const history = loadHistory();
       const soup = (state.soup || "").trim();
       const dishes = state.dishes.map((d) => d.trim()).filter((d) => d);
-      const desserts = state.desserts.map((d) => d.trim()).filter((d) => d);
+      const desserts = state.desserts
+        .map((d) => ({ name: (d.name || "").trim(), price: (d.price || "").trim() }))
+        .filter((d) => d.name);
       if (!soup && dishes.length === 0 && desserts.length === 0) {
         delete history.days[state.date];
       } else {
@@ -265,7 +279,6 @@
     price: document.getElementById("in-price"),
     includes: document.getElementById("in-includes"),
     footer: document.getElementById("in-footer"),
-    dessertsPrice: document.getElementById("in-desserts-price"),
     dishes: document.getElementById("dishes"),
     dishCount: document.getElementById("dish-count"),
     dishSuggestions: document.getElementById("dish-suggestions"),
@@ -325,6 +338,7 @@
       placeholder: "Nome da sobremesa",
       countEl: el.dessertCount,
       aria: "Sobremesa",
+      priced: true, // cada sobremesa tem nome + preço próprio
     },
   };
 
@@ -337,7 +351,6 @@
     el.price.value = state.price;
     el.includes.value = state.includes;
     el.footer.value = state.footer;
-    el.dessertsPrice.value = state.dessertsPrice;
     el.editor.setAttribute("data-kind", state.kind);
     renderKindToggle();
     renderList("prato");
@@ -351,27 +364,39 @@
   function renderList(kind, focusIndex) {
     const cfg = LIST_CONFIG[kind];
     const arr = state[cfg.arrKey];
+    const emptyItem = () => (cfg.priced ? { name: "", price: "" } : "");
     cfg.container.innerHTML = "";
-    arr.forEach((name, i) => {
+    arr.forEach((item, i) => {
+      const name = cfg.priced ? item.name || "" : item;
       const row = document.createElement("div");
-      row.className = "dish-row";
+      row.className = "dish-row" + (cfg.priced ? " dish-row--priced" : "");
+      const priceField = cfg.priced
+        ? `<input type="text" class="dish-price" value="${esc(item.price || "")}" placeholder="€" aria-label="Preço da sobremesa ${i + 1}" />`
+        : "";
       row.innerHTML = `
         <span class="dish-row__num">${i + 1}.</span>
         <input type="text" class="dish-name" list="${cfg.datalist}" value="${esc(name)}" placeholder="${esc(cfg.placeholder)}" aria-label="${esc(cfg.aria)} ${i + 1}" />
+        ${priceField}
         <button class="dish-move" type="button" data-dir="-1" title="Mover para cima" aria-label="Mover ${esc(cfg.aria.toLowerCase())} para cima">▲</button>
         <button class="dish-move" type="button" data-dir="1" title="Mover para baixo" aria-label="Mover ${esc(cfg.aria.toLowerCase())} para baixo">▼</button>
         <button class="dish-remove" type="button" title="Remover ${esc(cfg.aria.toLowerCase())}">✕</button>
       `;
       const input = row.querySelector(".dish-name");
       input.addEventListener("input", (e) => {
-        arr[i] = e.target.value;
+        if (cfg.priced) arr[i].name = e.target.value; else arr[i] = e.target.value;
         onChange(false);
       });
+      if (cfg.priced) {
+        row.querySelector(".dish-price").addEventListener("input", (e) => {
+          arr[i].price = e.target.value;
+          onChange(false);
+        });
+      }
       // Enter cria um novo item a seguir
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          arr.splice(i + 1, 0, "");
+          arr.splice(i + 1, 0, emptyItem());
           renderList(kind, i + 1);
           onChange(false);
         }
@@ -395,7 +420,7 @@
       });
       row.querySelector(".dish-remove").addEventListener("click", () => {
         arr.splice(i, 1);
-        if (arr.length === 0) arr.push("");
+        if (arr.length === 0) arr.push(emptyItem());
         renderList(kind);
         onChange(false);
       });
@@ -578,7 +603,7 @@
       });
       (Array.isArray(day.desserts) ? day.desserts : []).forEach((dessert) => {
         if (dessertList.length >= MAX_DISH_SUGGESTIONS) return;
-        const name = String(dessert || "").trim();
+        const name = String((dessert && dessert.name) || "").trim();
         if (!name) return;
         const key = name.toLowerCase();
         if (!dessertSeen.has(key)) {
@@ -616,24 +641,20 @@
       html += `<p class="menu__eyebrow">Sobremesas</p>`;
       if (m.date) html += `<p class="menu__date">${esc(formatDatePT(m.date))}</p>`;
 
-      // Sobremesas do dia (sem "o menu inclui" nem sopa)
-      const desserts = m.desserts.filter((d) => d.trim());
+      // Sobremesas do dia (cada uma com o seu preço; sem "o menu inclui" nem sopa)
+      const desserts = m.desserts.filter((d) => (d.name || "").trim());
       if (desserts.length > 0) {
         html += `<div class="menu__dishes-block">
           <p class="menu__dishes-title">Sobremesas do dia</p>
           <div class="menu__dishes">
-            ${desserts.map((d) => `<div class="menu__dish">${esc(d)}</div>`).join("")}
+            ${desserts.map((d) => {
+              const price = (d.price || "").trim();
+              return `<div class="menu__dish menu__dish--priced"><span class="menu__dish-name">${esc(d.name)}</span>${price ? `<span class="menu__dish-price">${esc(price)}</span>` : ""}</div>`;
+            }).join("")}
           </div>
         </div>`;
       } else {
         html += `<p class="menu__empty">Escreve as sobremesas de hoje no editor à esquerda para veres o menu aparecer aqui.</p>`;
-      }
-
-      if (m.dessertsPrice.trim()) {
-        html += `<div class="menu__price-box">
-          <p class="menu__price-label">Sobremesas</p>
-          <p class="menu__price-value">${esc(m.dessertsPrice)}</p>
-        </div>`;
       }
 
       if (m.footer.trim()) {
@@ -687,8 +708,9 @@
      folha (print) ou no canvas (story). */
   function autoFit() {
     const menu = el.menu;
-    const activeArr = state.kind === "sobremesas" ? state.desserts : state.dishes;
-    const count = activeArr.filter((d) => d.trim()).length;
+    const count = state.kind === "sobremesas"
+      ? state.desserts.filter((d) => (d.name || "").trim()).length
+      : state.dishes.filter((d) => d.trim()).length;
 
     let fit;
     if (count <= 4) fit = 1.28;
@@ -755,7 +777,11 @@
   // duas coerentes mesmo que só uma esteja visível no modo ativo.
   function updateListCount(kind) {
     const cfg = LIST_CONFIG[kind];
-    cfg.countEl.textContent = String(state[cfg.arrKey].filter((d) => d.trim()).length);
+    const arr = state[cfg.arrKey];
+    const n = cfg.priced
+      ? arr.filter((d) => (d.name || "").trim()).length
+      : arr.filter((d) => d.trim()).length;
+    cfg.countEl.textContent = String(n);
   }
   function updateDishCount() {
     updateListCount("prato");
@@ -780,7 +806,6 @@
       ["price", el.price],
       ["includes", el.includes],
       ["footer", el.footer],
-      ["dessertsPrice", el.dessertsPrice],
     ];
     map.forEach(([key, node]) => {
       node.addEventListener("input", () => {
@@ -824,7 +849,7 @@
     const day = history.days[state.date];
     state.soup = day ? day.soup || "" : "";
     state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
-    state.desserts = day && Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : ["", "", ""];
+    state.desserts = day && Array.isArray(day.desserts) && day.desserts.length ? copyDesserts(day.desserts) : emptyDesserts();
     el.date.value = state.date;
     el.soup.value = state.soup;
     renderList("prato");
@@ -841,7 +866,7 @@
 
   if (el.addDessert) {
     el.addDessert.addEventListener("click", () => {
-      state.desserts.push("");
+      state.desserts.push({ name: "", price: "" });
       renderList("sobremesas", state.desserts.length - 1);
       onChange(false);
     });
@@ -894,7 +919,7 @@
         return;
       }
       const day = history.days[prevDate];
-      state.desserts = Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : [""];
+      state.desserts = Array.isArray(day.desserts) && day.desserts.length ? copyDesserts(day.desserts) : emptyDesserts();
       renderList("sobremesas");
       onChange(false);
       toast(`Copiadas as sobremesas de ${formatDatePT(prevDate)}.`);
@@ -905,8 +930,8 @@
   // em sobremesas limpa as sobremesas. Anular repõe o snapshot do modo em que foi limpo.
   el.btnClear.addEventListener("click", () => {
     if (state.kind === "sobremesas") {
-      const snapshot = { desserts: state.desserts.slice() };
-      state.desserts = ["", "", ""];
+      const snapshot = { desserts: copyDesserts(state.desserts) };
+      state.desserts = emptyDesserts();
       fillEditor();
       onChange(false);
       toast("Dia limpo.", {
@@ -1169,7 +1194,7 @@
     const day = days[state.date];
     state.soup = day ? day.soup || "" : "";
     state.dishes = day && Array.isArray(day.dishes) && day.dishes.length ? day.dishes.slice() : ["", "", ""];
-    state.desserts = day && Array.isArray(day.desserts) && day.desserts.length ? day.desserts.slice() : ["", "", ""];
+    state.desserts = day && Array.isArray(day.desserts) && day.desserts.length ? copyDesserts(day.desserts) : emptyDesserts();
     fillEditor();
     updatePreviewChrome();
     onChange(false);

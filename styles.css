@@ -292,6 +292,8 @@ input:focus {
   font-variant-numeric: tabular-nums;
 }
 .dish-row input { flex: 1; }
+/* Nas sobremesas, o preço de cada item é um campo estreito à direita do nome */
+.dish-row .dish-price { flex: 0 0 82px; text-align: right; font-variant-numeric: tabular-nums; }
 .dish-move {
   border: 1px solid transparent;
   background: transparent;
@@ -525,6 +527,26 @@ input:focus {
   line-height: 1.2;
   color: var(--m-ink);
   padding: calc(3px * var(--fit)) 0;
+}
+/* Sobremesas: cada item tem o seu preço — nome à esquerda, preço à direita.
+   (Nenhum template define `display` no .menu__dish, por isso este flex vence.) */
+.menu__dish--priced {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(16px * var(--fit));
+  text-align: left;
+}
+.menu__dish-name { min-width: 0; }
+.menu__dish-price {
+  flex: 0 0 auto;
+  color: var(--m-accent);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.58em;
+  letter-spacing: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Medalhão de preço */
