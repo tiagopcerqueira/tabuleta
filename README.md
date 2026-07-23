@@ -39,7 +39,8 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
   - Imprimir (fundo branco): **Clássico**, **Moderno**, **Bistrô**, **Tabuleta**.
   - Story (criativos): **Ardósia**, **Vibrante**, **Fresco**, **Editorial**.
 - ✅ **Logótipo** do restaurante (carrega uma imagem — fica em todos os menus).
-- ✅ **Marca** definida uma vez (logótipo, nome, frase) com **sugestões** de frases já usadas.
+- ✅ **Marca** definida uma vez (logótipo, nome, frase) com **sugestões** do nome do restaurante e das frases já usadas.
+- ✅ Templates de impressão em **branco puro** (poupa tinteiro); logótipo sem moldura (PNG transparente fica limpo).
 - ✅ **Um menu por data** — a app abre sempre no dia de hoje e cada dia guarda o seu menu (últimos 60 dias).
 - ✅ Botão "📋 Copiar de ontem" para recuperar o último menu guardado.
 - ✅ **Cópia de segurança** — exporta e importa todos os dados num ficheiro JSON.

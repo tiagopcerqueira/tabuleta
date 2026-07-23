@@ -49,6 +49,7 @@
       templatePrint: "classico",
       templateStory: "ardosia",
       logo: "",
+      restaurantHistory: [],
       taglineHistory: [],
       footerHistory: [],
     };
@@ -68,6 +69,7 @@
       templatePrint: TEMPLATES.print.some((t) => t.id === s.templatePrint) ? s.templatePrint : d.templatePrint,
       templateStory: TEMPLATES.story.some((t) => t.id === s.templateStory) ? s.templateStory : d.templateStory,
       logo: typeof s.logo === "string" ? s.logo : d.logo,
+      restaurantHistory: Array.isArray(s.restaurantHistory) ? s.restaurantHistory.filter((x) => typeof x === "string") : d.restaurantHistory,
       taglineHistory: Array.isArray(s.taglineHistory) ? s.taglineHistory.filter((x) => typeof x === "string") : d.taglineHistory,
       footerHistory: Array.isArray(s.footerHistory) ? s.footerHistory.filter((x) => typeof x === "string") : d.footerHistory,
     };
@@ -84,6 +86,7 @@
       templatePrint: s.templatePrint,
       templateStory: s.templateStory,
       logo: s.logo,
+      restaurantHistory: s.restaurantHistory,
       taglineHistory: s.taglineHistory,
       footerHistory: s.footerHistory,
     };
@@ -175,10 +178,10 @@
       .replace(/"/g, "&quot;"); // também usado em atributos (value="…")
   }
 
-  // Grava as definições globais (v3) e o conteúdo do dia atual (histórico)
+  // Grava as definições globais (v3) e o conteúdo do dia atual (histórico).
+  // O histórico de nome/frase/rodapé é atualizado no "change" (blur) dos campos,
+  // não aqui — assim não guarda versões parciais escritas tecla a tecla.
   function save() {
-    state.taglineHistory = rememberPhrase(state.taglineHistory, state.tagline);
-    state.footerHistory = rememberPhrase(state.footerHistory, state.footer);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ settings: extractSettings(state) }));
     } catch (e) {
@@ -240,6 +243,7 @@
     dishCount: document.getElementById("dish-count"),
     dishSuggestions: document.getElementById("dish-suggestions"),
     soupSuggestions: document.getElementById("soup-suggestions"),
+    restaurantSuggestions: document.getElementById("restaurant-suggestions"),
     taglineSuggestions: document.getElementById("tagline-suggestions"),
     footerSuggestions: document.getElementById("footer-suggestions"),
     btnCopyPrev: document.getElementById("btn-copy-prev"),
@@ -431,6 +435,9 @@
   /* ---------------- Sugestões de frases (tagline / rodapé) ---------------- */
   // Preenche os datalists de tagline/rodapé a partir do histórico guardado nas definições (mais recentes primeiro)
   function rebuildPhraseSuggestions() {
+    if (el.restaurantSuggestions) {
+      el.restaurantSuggestions.innerHTML = state.restaurantHistory.map((s) => `<option value="${esc(s)}"></option>`).join("");
+    }
     if (el.taglineSuggestions) {
       el.taglineSuggestions.innerHTML = state.taglineHistory.map((s) => `<option value="${esc(s)}"></option>`).join("");
     }
@@ -630,6 +637,19 @@
       node.addEventListener("input", () => {
         state[key] = node.value;
         onChange(false);
+      });
+    });
+
+    // Guarda no histórico só quando o campo é confirmado (blur/Enter) — evita
+    // guardar versões parciais escritas tecla a tecla. Alimenta os datalists.
+    [
+      ["restaurant", "restaurantHistory"],
+      ["tagline", "taglineHistory"],
+      ["footer", "footerHistory"],
+    ].forEach(([key, hist]) => {
+      el[key].addEventListener("change", () => {
+        state[hist] = rememberPhrase(state[hist], state[key]);
+        save();
       });
     });
   }
@@ -1034,6 +1054,11 @@
   })();
   fillEditor();
   bindSimpleInputs();
+  // Semeia o histórico com os valores já guardados (nome/frase/rodapé), para
+  // ficarem logo disponíveis como sugestão sem ser preciso reescrevê-los.
+  state.restaurantHistory = rememberPhrase(state.restaurantHistory, state.restaurant);
+  state.taglineHistory = rememberPhrase(state.taglineHistory, state.tagline);
+  state.footerHistory = rememberPhrase(state.footerHistory, state.footer);
   rebuildSuggestions();
   rebuildPhraseSuggestions();
   updatePreviewChrome();

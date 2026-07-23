@@ -549,8 +549,8 @@ input:focus {
 
 /* ---------- PRINT 1/4 — classico: tradicional elegante ---------- */
 .menu[data-template="classico"] {
-  --m-paper: #fbfaf5;
-  --m-paper-2: #f2efe6;
+  --m-paper: #ffffff;
+  --m-paper-2: #ffffff;
   --m-ink: #1d3a4a;
   --m-muted: #7c8a91;
   --m-accent: #1c5b86;
@@ -656,8 +656,8 @@ input:focus {
 
 /* ---------- PRINT 3/4 — bistro: bistrô francês ---------- */
 .menu[data-template="bistro"] {
-  --m-paper: #f7f3ea;
-  --m-paper-2: #efe8d8;
+  --m-paper: #ffffff;
+  --m-paper-2: #ffffff;
   --m-ink: #2c2a26;
   --m-muted: #8a8275;
   --m-accent: #2f6b43;
@@ -672,11 +672,6 @@ input:focus {
 }
 .menu[data-template="bistro"] .menu__header .menu__restaurant,
 .menu[data-template="bistro"] .menu__header .menu__tagline { color: #f7f3ea; }
-.menu[data-template="bistro"] .menu__header .menu__logo {
-  background: rgba(247, 243, 234, 0.92);
-  border-radius: 8px;
-  padding: calc(4px * var(--fit));
-}
 .menu[data-template="bistro"] .menu__restaurant {
   font-family: var(--font-cond);
   text-transform: uppercase;
@@ -703,8 +698,8 @@ input:focus {
 
 /* ---------- PRINT 4/4 — tabuleta: ementa formal ---------- */
 .menu[data-template="tabuleta"] {
-  --m-paper: #fcfbf7;
-  --m-paper-2: #f3ece0;
+  --m-paper: #ffffff;
+  --m-paper-2: #ffffff;
   --m-ink: #3a2f2a;
   --m-muted: #8a7a6e;
   --m-accent: #7c2438;
@@ -778,11 +773,6 @@ input:focus {
   pointer-events: none;
   z-index: 0;
 }
-.menu[data-template="ardosia"] .menu__logo {
-  background: rgba(236, 228, 214, 0.92);
-  border-radius: 14px;
-  padding: calc(8px * var(--fit));
-}
 .menu[data-template="ardosia"] .menu__eyebrow { letter-spacing: calc(7px * var(--fit)); }
 .menu[data-template="ardosia"] .menu__date { color: var(--m-ink); font-weight: 600; letter-spacing: 0.5px; }
 .menu[data-template="ardosia"] .menu__includes { border: 1px solid var(--m-border); }
@@ -812,11 +802,6 @@ input:focus {
   --m-brass: #ffe9d6;
   --m-border: rgba(255, 246, 236, 0.4);
   --m-soft: rgba(255, 246, 236, 0.14);
-}
-.menu[data-template="vibrante"] .menu__logo {
-  background: rgba(255, 246, 236, 0.92);
-  border-radius: 14px;
-  padding: calc(8px * var(--fit));
 }
 .menu[data-template="vibrante"] .menu__restaurant {
   font-family: var(--font-cond);
@@ -932,11 +917,6 @@ input:focus {
 .menu[data-template="editorial"] .menu__header {
   margin: -64px -64px 0;
   padding: calc(64px * var(--fit)) 64px calc(20px * var(--fit));
-}
-.menu[data-template="editorial"] .menu__header .menu__logo {
-  background: rgba(246, 242, 234, 0.92);
-  border-radius: 14px;
-  padding: calc(8px * var(--fit));
 }
 .menu[data-template="editorial"] .menu__header .menu__restaurant,
 .menu[data-template="editorial"] .menu__tagline { color: #f6f2ea; }
