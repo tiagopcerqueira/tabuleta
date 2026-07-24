@@ -1,0 +1,150 @@
+/* ============================================================
+   Prato do Dia — base
+
+   Tipos de letra, variáveis de cor e reset. Carregado primeiro: tudo
+   o resto assume que estas variáveis existem.
+
+   Identidade "Azulejo": a app é uma ferramenta limpa e moderna (com modo
+   claro e escuro); o menu é uma peça de porcelana com moldura e medalhão
+   em latão — essa parte vive em menu.css e templates.css.
+   ============================================================ */
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("assets/fonts/fraunces-roman.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("assets/fonts/fraunces-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("assets/fonts/archivo.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("assets/fonts/oswald.woff2") format("woff2");
+}
+
+/* ---------------- Tokens da app (claro) ---------------- */
+:root {
+  --bg: #e7edf1;
+  --bg-2: #dde6ec;
+  --panel: #ffffff;
+  --panel-2: #f1f5f8;
+  --ink: #17313d;
+  --muted: #647581;
+  --line: #d9e2e8;
+  --primary: #1c5b86;
+  --primary-deep: #14425f;
+  --primary-soft: #e7f0f6;
+  --brass: #a9781f;
+  --danger: #b23b3b;
+  --shadow-sm: 0 1px 2px rgba(20, 50, 70, 0.06);
+  --shadow: 0 12px 34px rgba(18, 46, 66, 0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-ui:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-sans:
+    "Archivo", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-cond: "Oswald", ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f151a;
+    --bg-2: #0b1015;
+    --panel: #17212a;
+    --panel-2: #1e2a34;
+    --ink: #e8eef3;
+    --muted: #91a3af;
+    --line: #2a3843;
+    --primary: #4ea0d6;
+    --primary-deep: #6fb6e4;
+    --primary-soft: #172733;
+    --brass: #d3a552;
+    --danger: #e07a7a;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  }
+}
+/* Override explícito do utilizador vence sempre o media query */
+:root[data-theme="light"] {
+  --bg: #e7edf1;
+  --bg-2: #dde6ec;
+  --panel: #ffffff;
+  --panel-2: #f1f5f8;
+  --ink: #17313d;
+  --muted: #647581;
+  --line: #d9e2e8;
+  --primary: #1c5b86;
+  --primary-deep: #14425f;
+  --primary-soft: #e7f0f6;
+  --brass: #a9781f;
+  --danger: #b23b3b;
+  --shadow-sm: 0 1px 2px rgba(20, 50, 70, 0.06);
+  --shadow: 0 12px 34px rgba(18, 46, 66, 0.12);
+}
+:root[data-theme="dark"] {
+  --bg: #0f151a;
+  --bg-2: #0b1015;
+  --panel: #17212a;
+  --panel-2: #1e2a34;
+  --ink: #e8eef3;
+  --muted: #91a3af;
+  --line: #2a3843;
+  --primary: #4ea0d6;
+  --primary-deep: #6fb6e4;
+  --primary-soft: #172733;
+  --brass: #d3a552;
+  --danger: #e07a7a;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Visível para leitores de ecrã, invisível no ecrã. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(1200px 600px at 100% -10%, var(--primary-soft), transparent 60%), var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

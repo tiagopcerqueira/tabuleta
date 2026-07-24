@@ -1,205 +1,334 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prato do Dia — Gerador de Menu</title>
-  <meta name="description" content="Escreve a sopa e os pratos disponíveis e gera um menu A4 para mostrar aos clientes." />
-  <meta name="theme-color" content="#14425f" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <!-- ?v= força o navegador a ir buscar a versão nova após cada atualização -->
-  <link rel="stylesheet" href="styles.css?v=9" />
-</head>
-<body>
-  <!-- ============ BARRA SUPERIOR ============ -->
-  <header class="topbar no-print">
-    <div class="topbar__brand">
-      <span class="topbar__logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g fill="#ffffff" fill-opacity="0.95">
-            <circle cx="12" cy="6.6" r="3.5" />
-            <circle cx="12" cy="17.4" r="3.5" />
-            <circle cx="6.6" cy="12" r="3.5" />
-            <circle cx="17.4" cy="12" r="3.5" />
-            <rect x="8.5" y="8.5" width="7" height="7" rx="1.6" />
-          </g>
-          <circle cx="12" cy="12" r="1.9" fill="#14425f" />
-        </svg>
-      </span>
-      <div>
-        <h1>Prato do Dia</h1>
-        <p>Escreve a sopa e os pratos e gera o menu para os clientes</p>
-      </div>
-    </div>
-    <div class="topbar__actions">
-      <button id="btn-theme" class="btn btn--ghost" type="button" title="Alternar claro/escuro" aria-label="Alternar modo claro/escuro">🌙</button>
-      <button id="btn-print" class="btn btn--primary" type="button">🖨️ Imprimir / PDF</button>
-      <button id="btn-image" class="btn" type="button">🖼️ Guardar imagem</button>
-      <button id="btn-clear" class="btn btn--ghost" type="button">🧹 Limpar dia</button>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <main class="layout">
-    <!-- ============ EDITOR ============ -->
-    <section class="editor no-print" aria-label="Editor do menu">
-      <div id="kind-toggle" class="kind-toggle no-print">
-        <button class="kind-btn" type="button" data-kind="prato">🍽️ Prato do dia</button>
-        <button class="kind-btn" type="button" data-kind="sobremesas">🍰 Sobremesas</button>
-      </div>
+    <!--
+      Tudo o que a app precisa vem da própria origem. Só as imagens e os dados
+      gerados no dispositivo (data:/blob:) escapam a essa regra, porque o
+      logótipo e o menu exportado vivem em memória. Nenhum script embutido é
+      permitido — é isso que torna inofensivo qualquer texto escrito pelo
+      utilizador que acabe na página.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
 
-      <div class="card">
-        <h2 class="card__title">Dia</h2>
-        <p class="card__hint">Cada dia guarda o seu menu — muda a data para preparar outro dia.</p>
-        <div class="date-nav">
-          <button id="btn-date-prev" class="btn btn--ghost btn--small" type="button" title="Dia anterior" aria-label="Dia anterior">‹</button>
-          <input id="in-date" type="date" aria-label="Data do menu" />
-          <button id="btn-date-next" class="btn btn--ghost btn--small" type="button" title="Dia seguinte" aria-label="Dia seguinte">›</button>
-          <button id="btn-date-today" class="btn btn--ghost btn--small" type="button">Hoje</button>
+    <title>Prato do Dia — Gerador de Menu</title>
+    <meta
+      name="description"
+      content="Escreve a sopa e os pratos disponíveis e gera um menu A4 para mostrar aos clientes."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#14425f" />
+
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Prato do Dia" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Prato do Dia — Gerador de Menu" />
+    <meta
+      property="og:description"
+      content="Escreve a sopa e os pratos e gera o menu do dia, pronto a imprimir ou a publicar."
+    />
+    <meta property="og:image" content="assets/icons/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+
+    <!--
+      Quatro ficheiros em vez de um, pela mesma razão que o JavaScript está em
+      módulos: a estética de um template não deve viver ao lado do layout do
+      editor. A ordem importa — base.css define as variáveis que os restantes
+      usam, e templates.css pinta por cima da estrutura de menu.css.
+
+      O ?v= força o navegador a ir buscar a versão nova após cada atualização.
+    -->
+    <link rel="stylesheet" href="styles/base.css?v=10.0.0" />
+    <link rel="stylesheet" href="styles/app.css?v=10.0.0" />
+    <link rel="stylesheet" href="styles/menu.css?v=10.0.0" />
+    <link rel="stylesheet" href="styles/templates.css?v=10.0.0" />
+  </head>
+  <body>
+    <noscript>
+      <p style="padding: 24px; font-family: system-ui, sans-serif; line-height: 1.6">
+        Esta aplicação precisa de JavaScript para funcionar. Ativa o JavaScript no teu navegador e volta a
+        carregar a página.
+      </p>
+    </noscript>
+
+    <!-- ============ BARRA SUPERIOR ============ -->
+    <header class="topbar no-print">
+      <div class="topbar__brand">
+        <span class="topbar__logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g fill="#ffffff" fill-opacity="0.95">
+              <circle cx="12" cy="6.6" r="3.5" />
+              <circle cx="12" cy="17.4" r="3.5" />
+              <circle cx="6.6" cy="12" r="3.5" />
+              <circle cx="17.4" cy="12" r="3.5" />
+              <rect x="8.5" y="8.5" width="7" height="7" rx="1.6" />
+            </g>
+            <circle cx="12" cy="12" r="1.9" fill="#14425f" />
+          </svg>
+        </span>
+        <div>
+          <h1>Prato do Dia</h1>
+          <p>Escreve a sopa e os pratos e gera o menu para os clientes</p>
         </div>
       </div>
+      <div class="topbar__actions">
+        <button
+          id="btn-theme"
+          class="btn btn--ghost"
+          type="button"
+          title="Alternar claro/escuro"
+          aria-label="Alternar modo claro/escuro"
+        >
+          🌙
+        </button>
+        <button id="btn-print" class="btn btn--primary" type="button">🖨️ Imprimir / PDF</button>
+        <button id="btn-image" class="btn" type="button">🖼️ Guardar imagem</button>
+        <button id="btn-clear" class="btn btn--ghost" type="button">🧹 Limpar dia</button>
+      </div>
+    </header>
 
-      <div class="card">
-        <h2 class="card__title">Marca</h2>
-        <p class="card__hint">Define uma vez — fica em todos os menus.</p>
-        <div class="logo-field">
-          <div id="logo-preview" class="logo-preview" aria-hidden="true"><span>Sem logótipo</span></div>
-          <div class="logo-actions">
-            <button id="btn-logo" class="btn btn--small" type="button">🖼️ Escolher logótipo</button>
-            <button id="btn-logo-remove" class="btn btn--ghost btn--small" type="button" hidden>Remover</button>
-          </div>
-          <input id="in-logo" type="file" accept="image/*" hidden />
+    <main class="layout">
+      <!-- ============ EDITOR ============ -->
+      <section class="editor no-print" aria-label="Editor do menu">
+        <div id="kind-toggle" class="kind-toggle no-print" role="group" aria-label="Tipo de menu">
+          <button class="kind-btn" type="button" data-kind="prato">🍽️ Prato do dia</button>
+          <button class="kind-btn" type="button" data-kind="sobremesas">🍰 Sobremesas</button>
         </div>
-        <label class="field">
-          <span>Nome do restaurante</span>
-          <input id="in-restaurant" type="text" list="restaurant-suggestions" placeholder="Ex.: Tasca do Manel" />
-        </label>
-        <label class="field">
-          <span>Frase / subtítulo (opcional)</span>
-          <input id="in-tagline" type="text" list="tagline-suggestions" placeholder="Ex.: Cozinha caseira desde 1985" />
-        </label>
-      </div>
 
-      <div class="card card--prato">
-        <h2 class="card__title">Sopa do dia</h2>
-        <label class="field">
-          <input id="in-soup" type="text" list="soup-suggestions" placeholder="Ex.: Caldo verde" />
-        </label>
-      </div>
-
-      <div class="card card--prato" id="dishes-card">
-        <div class="card__head">
-          <h2 class="card__title">Pratos disponíveis</h2>
-          <span class="card__head-actions">
-            <button id="btn-copy-prev" class="btn btn--ghost btn--small" type="button" title="Recuperar o último menu guardado">📋 Copiar de ontem</button>
-            <span id="dish-count" class="badge">0</span>
-          </span>
-        </div>
-        <p class="card__hint">Escreve os pratos de hoje. O menu ajusta o espaçamento sozinho para caber numa folha A4.</p>
-        <div id="dishes"><!-- inputs de pratos injetados por JS --></div>
-        <button id="btn-add-dish" class="btn btn--dashed" type="button">＋ Adicionar prato</button>
-      </div>
-
-      <div class="card card--sobremesas" id="desserts-card">
-        <div class="card__head">
-          <h2 class="card__title">Sobremesas</h2>
-          <span class="card__head-actions">
-            <button id="btn-copy-prev-desserts" class="btn btn--ghost btn--small" type="button" title="Recuperar as sobremesas do último dia guardado">📋 Copiar de ontem</button>
-            <span id="dessert-count" class="badge">0</span>
-          </span>
-        </div>
-        <p class="card__hint">Escreve as sobremesas de hoje. O menu ajusta o espaçamento sozinho.</p>
-        <div id="desserts-list"><!-- inputs por JS --></div>
-        <button id="btn-add-dessert" class="btn btn--dashed" type="button">＋ Adicionar sobremesa</button>
-      </div>
-
-      <div class="card">
-        <h2 class="card__title">Preço &amp; nota</h2>
-        <label class="field field--prato">
-          <span>Preço do menu</span>
-          <input id="in-price" type="text" placeholder="Ex.: 9,50 €" />
-        </label>
-        <label class="field field--prato">
-          <span>O menu inclui</span>
-          <input id="in-includes" type="text" placeholder="Sopa · Pão · Bebida · Café · Prato à escolha" />
-        </label>
-        <label class="field">
-          <span>Nota de rodapé (opcional)</span>
-          <input id="in-footer" type="text" list="footer-suggestions" placeholder="Ex.: Bom apetite! Aceitamos take-away." />
-        </label>
-      </div>
-
-      <div class="card">
-        <h2 class="card__title">Modelo do menu</h2>
-        <div class="field">
-          <span>Onde vais usar</span>
-          <div id="format-toggle" class="format-toggle">
-            <button class="format-btn" type="button" data-format="print">🖨️ Imprimir (A4)</button>
-            <button class="format-btn" type="button" data-format="story">📱 Story (9:16)</button>
+        <div class="card">
+          <h2 class="card__title">Dia</h2>
+          <p class="card__hint">Cada dia guarda o seu menu — muda a data para preparar outro dia.</p>
+          <div class="date-nav">
+            <button
+              id="btn-date-prev"
+              class="btn btn--ghost btn--small"
+              type="button"
+              title="Dia anterior"
+              aria-label="Dia anterior"
+            >
+              ‹
+            </button>
+            <input id="in-date" type="date" aria-label="Data do menu" />
+            <button
+              id="btn-date-next"
+              class="btn btn--ghost btn--small"
+              type="button"
+              title="Dia seguinte"
+              aria-label="Dia seguinte"
+            >
+              ›
+            </button>
+            <button id="btn-date-today" class="btn btn--ghost btn--small" type="button">Hoje</button>
           </div>
         </div>
-        <div class="field">
-          <span>Template</span>
-          <div id="templates" class="templates"><!-- chips injetados por JS --></div>
-        </div>
-      </div>
 
-      <div class="card">
-        <h2 class="card__title">Cópia de segurança</h2>
-        <p class="card__hint">Guarda ou repõe todos os dados — definições e os menus de todos os dias.</p>
-        <div class="backup-actions">
-          <button id="btn-export" class="btn" type="button">⬇️ Exportar dados</button>
-          <button id="btn-import" class="btn" type="button">⬆️ Importar dados</button>
-          <input id="in-import" type="file" accept=".json,application/json" hidden />
+        <div class="card">
+          <h2 class="card__title">Marca</h2>
+          <p class="card__hint">Define uma vez — fica em todos os menus.</p>
+          <div class="logo-field">
+            <div id="logo-preview" class="logo-preview" aria-hidden="true"><span>Sem logótipo</span></div>
+            <div class="logo-actions">
+              <button id="btn-logo" class="btn btn--small" type="button">🖼️ Escolher logótipo</button>
+              <button id="btn-logo-remove" class="btn btn--ghost btn--small" type="button" hidden>
+                Remover
+              </button>
+            </div>
+            <input id="in-logo" type="file" accept="image/*" hidden />
+          </div>
+          <label class="field">
+            <span>Nome do restaurante</span>
+            <input
+              id="in-restaurant"
+              type="text"
+              list="restaurant-suggestions"
+              placeholder="Ex.: Tasca do Manel"
+              autocapitalize="words"
+              autocomplete="off"
+            />
+          </label>
+          <label class="field">
+            <span>Frase / subtítulo (opcional)</span>
+            <input
+              id="in-tagline"
+              type="text"
+              list="tagline-suggestions"
+              placeholder="Ex.: Cozinha caseira desde 1985"
+              autocapitalize="sentences"
+              autocomplete="off"
+            />
+          </label>
         </div>
-      </div>
-    </section>
 
-    <!-- ============ PRÉ-VISUALIZAÇÃO ============ -->
-    <section class="preview" aria-label="Pré-visualização do menu">
-      <div id="preview-hint" class="preview__hint no-print">Pré-visualização — folha A4, pronta a imprimir 👇</div>
-      <div id="fit-warning" class="preview__warn no-print" hidden>⚠️ Muitos pratos — o texto vai ficar pequeno.</div>
-      <div id="menu-wrap" class="menu-wrap">
-        <div id="menu-scale" class="menu-scale">
-          <article id="menu" class="menu" data-format="print" data-template="classico" style="--fit:1">
-            <!-- render por JS -->
-          </article>
+        <div class="card card--prato">
+          <h2 class="card__title">Sopa do dia</h2>
+          <label class="field">
+            <span class="visually-hidden">Sopa do dia</span>
+            <input
+              id="in-soup"
+              type="text"
+              list="soup-suggestions"
+              placeholder="Ex.: Caldo verde"
+              autocapitalize="sentences"
+              autocomplete="off"
+            />
+          </label>
         </div>
-      </div>
-    </section>
-  </main>
 
-  <!-- ============ MODAL: menu gerado (guardar / imprimir) ============ -->
-  <div id="pd-modal" class="pd-modal no-print" hidden>
-    <div class="pd-modal__backdrop" id="pd-modal-backdrop"></div>
-    <div class="pd-modal__card" role="dialog" aria-modal="true" aria-label="Menu gerado">
-      <div class="pd-modal__bar">
-        <strong>Menu pronto</strong>
-        <button class="pd-modal__close" id="pd-modal-close" type="button" aria-label="Fechar">✕</button>
-      </div>
-      <p class="pd-modal__hint" id="pd-modal-hint"></p>
-      <div class="pd-modal__imgwrap">
-        <img id="pd-modal-img" alt="Pré-visualização do menu do dia" />
-      </div>
-      <div class="pd-modal__actions">
-        <a id="pd-modal-download" class="btn btn--primary" download>⬇️ Descarregar imagem</a>
-        <button id="pd-modal-print" class="btn" type="button">🖨️ Imprimir</button>
+        <div class="card card--prato" id="dishes-card">
+          <div class="card__head">
+            <h2 class="card__title">Pratos disponíveis</h2>
+            <span class="card__head-actions">
+              <button
+                id="btn-copy-prev"
+                class="btn btn--ghost btn--small"
+                type="button"
+                title="Recuperar o último menu guardado"
+              >
+                📋 Copiar de ontem
+              </button>
+              <span id="dish-count" class="badge" aria-label="Número de pratos preenchidos">0</span>
+            </span>
+          </div>
+          <p class="card__hint">
+            Escreve os pratos de hoje. O menu ajusta o espaçamento sozinho para caber numa folha A4.
+          </p>
+          <div id="dishes"><!-- linhas injetadas por JS --></div>
+          <button id="btn-add-dish" class="btn btn--dashed" type="button">＋ Adicionar prato</button>
+        </div>
+
+        <div class="card card--sobremesas" id="desserts-card">
+          <div class="card__head">
+            <h2 class="card__title">Sobremesas</h2>
+            <span class="card__head-actions">
+              <button
+                id="btn-copy-prev-desserts"
+                class="btn btn--ghost btn--small"
+                type="button"
+                title="Recuperar as sobremesas do último dia guardado"
+              >
+                📋 Copiar de ontem
+              </button>
+              <span id="dessert-count" class="badge" aria-label="Número de sobremesas preenchidas">0</span>
+            </span>
+          </div>
+          <p class="card__hint">Escreve as sobremesas de hoje. O menu ajusta o espaçamento sozinho.</p>
+          <div id="desserts-list"><!-- linhas injetadas por JS --></div>
+          <button id="btn-add-dessert" class="btn btn--dashed" type="button">＋ Adicionar sobremesa</button>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Preço &amp; nota</h2>
+          <label class="field field--prato">
+            <span>Preço do menu</span>
+            <input id="in-price" type="text" inputmode="decimal" placeholder="Ex.: 9,50 €" />
+          </label>
+          <label class="field field--prato">
+            <span>O menu inclui</span>
+            <input
+              id="in-includes"
+              type="text"
+              placeholder="Sopa · Pão · Bebida · Café · Prato à escolha"
+              autocapitalize="sentences"
+            />
+          </label>
+          <label class="field">
+            <span>Nota de rodapé (opcional)</span>
+            <input
+              id="in-footer"
+              type="text"
+              list="footer-suggestions"
+              placeholder="Ex.: Bom apetite! Aceitamos take-away."
+              autocapitalize="sentences"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Modelo do menu</h2>
+          <div class="field">
+            <span>Onde vais usar</span>
+            <div id="format-toggle" class="format-toggle" role="group" aria-label="Formato do menu">
+              <button class="format-btn" type="button" data-format="print">🖨️ Imprimir (A4)</button>
+              <button class="format-btn" type="button" data-format="story">📱 Story (9:16)</button>
+            </div>
+          </div>
+          <div class="field">
+            <span>Template</span>
+            <div id="templates" class="templates" role="group" aria-label="Template do menu">
+              <!-- chips injetados por JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Cópia de segurança</h2>
+          <p class="card__hint">Guarda ou repõe todos os dados — definições e os menus de todos os dias.</p>
+          <div class="backup-actions">
+            <button id="btn-export" class="btn" type="button">⬇️ Exportar dados</button>
+            <button id="btn-import" class="btn" type="button">⬆️ Importar dados</button>
+            <input id="in-import" type="file" accept=".json,application/json" hidden />
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PRÉ-VISUALIZAÇÃO ============ -->
+      <section class="preview" aria-label="Pré-visualização do menu">
+        <div id="preview-hint" class="preview__hint no-print">
+          Pré-visualização — folha A4, pronta a imprimir 👇
+        </div>
+        <div id="fit-warning" class="preview__warn no-print" hidden>
+          ⚠️ Muitos pratos — o texto vai ficar pequeno.
+        </div>
+        <div id="menu-wrap" class="menu-wrap">
+          <div id="menu-scale" class="menu-scale">
+            <article id="menu" class="menu" data-format="print" data-template="classico" style="--fit: 1">
+              <!-- render por JS -->
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ MODAL: menu gerado (guardar / imprimir) ============ -->
+    <div id="pd-modal" class="pd-modal no-print" hidden>
+      <div class="pd-modal__backdrop" id="pd-modal-backdrop"></div>
+      <div class="pd-modal__card" role="dialog" aria-modal="true" aria-label="Menu gerado">
+        <div class="pd-modal__bar">
+          <strong>Menu pronto</strong>
+          <button class="pd-modal__close" id="pd-modal-close" type="button" aria-label="Fechar">✕</button>
+        </div>
+        <p class="pd-modal__hint" id="pd-modal-hint"></p>
+        <div class="pd-modal__imgwrap">
+          <img id="pd-modal-img" alt="Pré-visualização do menu do dia" />
+        </div>
+        <div class="pd-modal__actions">
+          <a id="pd-modal-download" class="btn btn--primary" download>⬇️ Descarregar imagem</a>
+          <button id="pd-modal-print" class="btn" type="button">🖨️ Imprimir</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="pd-toast" class="pd-toast no-print" role="status" aria-live="polite" hidden></div>
+    <div id="pd-toast" class="pd-toast no-print" role="status" aria-live="polite"></div>
 
-  <datalist id="dish-suggestions"></datalist>
-  <datalist id="dessert-suggestions"></datalist>
-  <datalist id="soup-suggestions"></datalist>
-  <datalist id="restaurant-suggestions"></datalist>
-  <datalist id="tagline-suggestions"></datalist>
-  <datalist id="footer-suggestions"></datalist>
+    <datalist id="dish-suggestions"></datalist>
+    <datalist id="dessert-suggestions"></datalist>
+    <datalist id="soup-suggestions"></datalist>
+    <datalist id="restaurant-suggestions"></datalist>
+    <datalist id="tagline-suggestions"></datalist>
+    <datalist id="footer-suggestions"></datalist>
 
-  <script src="assets/html2canvas.min.js"></script>
-  <script src="app.js?v=9"></script>
-</body>
+    <script src="assets/html2canvas.min.js?v=10.0.0"></script>
+    <script type="module" src="src/main.js?v=10.0.0"></script>
+  </body>
 </html>

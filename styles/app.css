@@ -1,0 +1,687 @@
+/* ============================================================
+   Prato do Dia — interface da aplicação
+
+   Tudo o que rodeia o menu: barra superior, editor, campos, listas,
+   interruptores, modal e avisos. Nada aqui afeta o menu impresso ou
+   exportado — isso é menu.css e templates.css.
+   ============================================================ */
+
+/* ---------------- Barra superior ---------------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.topbar__logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(150deg, var(--primary), var(--primary-deep));
+  display: grid;
+  place-items: center;
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  flex: 0 0 auto;
+}
+.topbar__logo svg {
+  width: 24px;
+  height: 24px;
+}
+.topbar h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  color: var(--ink);
+}
+.topbar p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.topbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------------- Botões ---------------- */
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 10px 15px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.04s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.btn:hover {
+  background: var(--panel-2);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+.btn--primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+.btn--primary:hover {
+  background: var(--primary-deep);
+  border-color: transparent;
+}
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  box-shadow: none;
+}
+.btn--ghost:hover {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+.btn--small {
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+/* ---------------- Layout ---------------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 430px) 1fr;
+  gap: 28px;
+  padding: 28px;
+  max-width: 1440px;
+  margin: 0 auto;
+  align-items: start;
+}
+@media (max-width: 920px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------- Editor ---------------- */
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Interruptor de modo (Prato do dia / Sobremesas) — segmentado, maior e mais
+   destacado que o .format-toggle, porque decide o que o resto do editor mostra. */
+.kind-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.kind-btn {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 14px;
+  border-radius: calc(var(--radius) - 4px);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.kind-btn:hover {
+  color: var(--ink);
+  background: var(--panel-2);
+}
+.kind-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+/* Visibilidade dos cartões/campos por modo — controlada por [data-kind] no .editor */
+.editor[data-kind="prato"] .card--sobremesas,
+.editor[data-kind="prato"] .field--sobremesas {
+  display: none;
+}
+.editor[data-kind="sobremesas"] .card--prato,
+.editor[data-kind="sobremesas"] .field--prato {
+  display: none;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.card__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card__title {
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--primary);
+}
+.card__head .card__title {
+  margin-bottom: 0;
+}
+.card__hint {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.badge {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 28px;
+  height: 26px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.date-nav input {
+  flex: 1;
+}
+#btn-date-prev,
+#btn-date-next {
+  font-size: 17px;
+  line-height: 1;
+  padding: 6px 12px;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 10px;
+}
+.backup-actions .btn {
+  flex: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.field:last-child {
+  margin-bottom: 0;
+}
+.field > span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+input[type="text"],
+input[type="date"] {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--panel-2);
+  color: var(--ink);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+input::placeholder {
+  color: color-mix(in srgb, var(--muted) 75%, transparent);
+}
+input:focus {
+  outline: none;
+  background: var(--panel);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+/* Lista de pratos disponíveis */
+.dish-row {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 9px;
+}
+.dish-row__num {
+  flex: 0 0 22px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.dish-row input {
+  flex: 1;
+}
+/* Nas sobremesas, o preço de cada item é um campo estreito à direita do nome */
+.dish-row .dish-price {
+  flex: 0 0 82px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* Esta app vive num tablet, numa cozinha, e é usada com os dedos.
+   Os controlos de cada linha têm de ser alvos de toque a sério (44px),
+   ainda que o glifo desenhado dentro deles seja pequeno. */
+.dish-move,
+.dish-remove {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 9px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 auto;
+}
+.dish-move {
+  font-size: 11px;
+}
+.dish-remove {
+  font-size: 16px;
+}
+.dish-move:hover {
+  background: var(--panel-2);
+  color: var(--primary);
+}
+.dish-move[disabled] {
+  opacity: 0.3;
+  cursor: default;
+  background: transparent;
+}
+.dish-remove:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+.dish-move:focus-visible,
+.dish-remove:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* Em ecrãs estreitos os alvos podem encolher um pouco para a linha caber. */
+@media (max-width: 420px) {
+  .dish-move,
+  .dish-remove {
+    min-width: 38px;
+    min-height: 40px;
+  }
+  .dish-row {
+    gap: 4px;
+  }
+}
+
+.btn--dashed {
+  width: 100%;
+  border: 1.5px dashed color-mix(in srgb, var(--primary) 45%, var(--line));
+  background: transparent;
+  color: var(--primary);
+  padding: 11px;
+  margin-top: 6px;
+  box-shadow: none;
+}
+.btn--dashed:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+/* Seletor de formato (Imprimir A4 / Story 9:16) — controlo segmentado */
+.format-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.format-btn {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 10px;
+  border-radius: calc(var(--radius-sm) - 3px);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.format-btn:hover {
+  color: var(--ink);
+}
+.format-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Templates do menu (chips por formato) */
+.templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.template-chip {
+  cursor: pointer;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  padding: 9px 13px 9px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--panel);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.template-chip:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+}
+.template-chip.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+.theme-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Logótipo (cartão Marca) */
+.logo-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.logo-preview {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--line);
+  background: var(--panel-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.logo-preview span {
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px;
+}
+.logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.logo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---------------- Pré-visualização ---------------- */
+/* min-width:0 evita que o item da grelha cresça para caber o tamanho nativo
+   do menu (794/1080px) — sem isto a coluna "rebenta" e a escala nunca <1. */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 92px;
+  min-width: 0;
+}
+.preview__hint {
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: center;
+}
+.preview__warn {
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brass);
+  background: color-mix(in srgb, var(--brass) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+}
+.menu-wrap {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  transition: height 0.1s ease;
+}
+/* A escala vive SEMPRE neste ancestral — nunca no #menu — para que o
+   html2canvas(#menu) capte sempre o tamanho nativo do formato. */
+.menu-scale {
+  transform: scale(var(--preview-scale, 1));
+  transform-origin: top center;
+}
+
+/* ---------------- Modal (guardar / imprimir) ---------------- */
+.pd-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.pd-modal[hidden] {
+  display: none;
+}
+.pd-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 28, 0.55);
+  backdrop-filter: blur(2px);
+}
+.pd-modal__card {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: min(560px, 100%);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pd-modal__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.pd-modal__bar strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+}
+.pd-modal__close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  line-height: 1;
+}
+.pd-modal__close:hover {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+.pd-modal__hint {
+  margin: 0;
+  padding: 12px 18px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.pd-modal__imgwrap {
+  padding: 16px 18px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+}
+.pd-modal__imgwrap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+}
+.pd-modal__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+}
+.pd-modal__actions .btn {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------------- Toast ---------------- */
+.pd-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 200;
+  max-width: min(520px, 92vw);
+  background: var(--ink);
+  color: var(--panel);
+  padding: 13px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+}
+/* A região fica sempre no documento (para os leitores de ecrã a anunciarem);
+   é a classe que a mostra, não o atributo hidden. */
+.pd-toast:not(.is-visible) {
+  display: none;
+}
+.pd-toast__action {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--panel) 40%, transparent);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pd-toast__action:hover {
+  background: color-mix(in srgb, var(--panel) 15%, transparent);
+}

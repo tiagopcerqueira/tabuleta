@@ -1,0 +1,27 @@
+{
+  "name": "prato-do-dia",
+  "version": "10.0.0",
+  "private": true,
+  "description": "Gerador de menu diário para restaurantes — app estática, offline-first, sem backend.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:watch": "node --test --watch \"test/**/*.test.js\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check && npm run test",
+    "release": "node tools/release.js",
+    "serve": "node tools/serve.js"
+  },
+  "devDependencies": {
+    "eslint": "^10.8.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2"
+  }
+}

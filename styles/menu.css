@@ -1,0 +1,406 @@
+/* ============================================================
+   Prato do Dia — estrutura do menu
+
+   Regras estruturais comuns aos dois formatos (folha A4 e story 9:16),
+   os tamanhos-base de cada um, e as regras de impressão.
+
+   Aqui não se pinta: as cores e a tipografia de cada template vivem em
+   templates.css. Esta separação é o que permite acrescentar um template
+   novo sem tocar em disposição nenhuma.
+
+   O espaçamento adapta-se ao número de pratos através de --fit, que o
+   JavaScript calcula (ver src/core/fit.js).
+   ============================================================ */
+
+.menu {
+  /* tokens neutros por omissão (sem template) */
+  --m-paper: #fbfaf5;
+  --m-paper-2: #f4f1e7;
+  --m-ink: #1d3a4a;
+  --m-muted: #7c8a91;
+  --m-accent: #1c5b86;
+  --m-brass: #a9781f;
+  --m-border: #c7d8e6;
+  --m-soft: #eef4f8;
+
+  --fit: 1;
+
+  max-width: 100%;
+  background: radial-gradient(120% 80% at 50% -10%, var(--m-paper), var(--m-paper) 60%, var(--m-paper-2));
+  color: var(--m-ink);
+  box-shadow: var(--shadow);
+  border-radius: 3px;
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dimensões nativas por formato */
+.menu[data-format="print"] {
+  width: 210mm;
+  height: 297mm;
+  padding: 16mm 18mm;
+}
+.menu[data-format="story"] {
+  width: 1080px;
+  height: 1920px;
+  padding: 64px;
+}
+
+/* Cabeçalho */
+.menu__header {
+  text-align: center;
+  flex: 0 0 auto;
+  padding-top: calc(2px * var(--fit));
+}
+.menu__restaurant {
+  font-family: var(--font-display);
+  font-size: calc(38px * var(--fit));
+  font-weight: 600;
+  color: var(--m-ink);
+  margin: 0;
+  line-height: 1.02;
+  letter-spacing: -0.4px;
+}
+.menu__tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: calc(15px * var(--fit));
+  color: var(--m-muted);
+  margin: calc(6px * var(--fit)) 0 0;
+}
+/* Logótipo — cada template (PART B) afina a altura/margens ao seu gosto */
+.menu__logo {
+  display: block;
+  margin: 0 auto calc(8px * var(--fit));
+  max-height: calc(56px * var(--fit));
+  max-width: 60%;
+  object-fit: contain;
+}
+
+/* Divisória ornamental (hairline + losango latão) */
+.menu__rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: calc(12px * var(--fit)) 0 calc(10px * var(--fit));
+  flex: 0 0 auto;
+}
+.menu__rule::before,
+.menu__rule::after {
+  content: "";
+  height: 1px;
+  width: calc(56px * var(--fit));
+  background: var(--m-border);
+}
+.menu__rule i {
+  width: calc(7px * var(--fit));
+  height: calc(7px * var(--fit));
+  background: var(--m-brass);
+  transform: rotate(45deg);
+  margin: 0 calc(11px * var(--fit));
+  border-radius: 1px;
+}
+
+/* Eyebrow + data */
+.menu__eyebrow {
+  text-align: center;
+  flex: 0 0 auto;
+  font-family: var(--font-ui);
+  font-size: calc(12px * var(--fit));
+  font-weight: 700;
+  letter-spacing: calc(4px * var(--fit));
+  text-transform: uppercase;
+  color: var(--m-accent);
+  margin: 0;
+}
+.menu__date {
+  text-align: center;
+  flex: 0 0 auto;
+  font-family: var(--font-ui);
+  font-size: calc(13px * var(--fit));
+  color: var(--m-muted);
+  margin: calc(4px * var(--fit)) 0 0;
+}
+
+/* Bloco "o menu inclui" */
+.menu__includes {
+  flex: 0 0 auto;
+  text-align: center;
+  margin: calc(14px * var(--fit)) auto calc(2px * var(--fit));
+  padding: calc(9px * var(--fit)) calc(18px * var(--fit));
+  background: var(--m-soft);
+  border-radius: 10px;
+  max-width: 92%;
+}
+.menu__includes-label {
+  font-family: var(--font-ui);
+  font-size: calc(10px * var(--fit));
+  letter-spacing: calc(2.5px * var(--fit));
+  text-transform: uppercase;
+  color: var(--m-muted);
+  margin: 0 0 calc(4px * var(--fit));
+  font-weight: 700;
+}
+.menu__includes-value {
+  font-family: var(--font-ui);
+  font-size: calc(14px * var(--fit));
+  color: var(--m-ink);
+  margin: 0;
+  font-weight: 500;
+}
+.menu__soup {
+  font-family: var(--font-display);
+  font-size: calc(15px * var(--fit));
+  color: var(--m-ink);
+  margin: calc(7px * var(--fit)) 0 0;
+}
+.menu__soup span {
+  font-family: var(--font-ui);
+  font-size: calc(10px * var(--fit));
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--m-accent);
+  font-weight: 700;
+  display: block;
+  margin-bottom: calc(1px * var(--fit));
+}
+
+/* Bloco de pratos — cresce e distribui o espaço verticalmente */
+.menu__dishes-block {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: calc(14px * var(--fit));
+}
+.menu__dishes-title {
+  flex: 0 0 auto;
+  font-family: var(--font-ui);
+  font-size: calc(12px * var(--fit));
+  font-weight: 700;
+  letter-spacing: calc(3px * var(--fit));
+  text-transform: uppercase;
+  color: var(--m-accent);
+  text-align: center;
+  margin: 0 0 calc(4px * var(--fit));
+}
+.menu__dishes {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+.menu__dish {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: calc(21px * var(--fit));
+  line-height: 1.2;
+  color: var(--m-ink);
+  padding: calc(3px * var(--fit)) 0;
+}
+/* Sobremesas: cada item tem o seu preço — nome à esquerda, preço à direita.
+   (Nenhum template define `display` no .menu__dish, por isso este flex vence.) */
+.menu__dish--priced {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(16px * var(--fit));
+  text-align: left;
+}
+.menu__dish-name {
+  min-width: 0;
+}
+.menu__dish-price {
+  flex: 0 0 auto;
+  color: var(--m-accent);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.58em;
+  letter-spacing: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Medalhão de preço */
+.menu__price-box {
+  flex: 0 0 auto;
+  align-self: center;
+  margin: calc(14px * var(--fit)) auto calc(4px * var(--fit));
+  text-align: center;
+  padding: calc(9px * var(--fit)) calc(26px * var(--fit));
+  border: 1.5px solid var(--m-brass);
+  border-radius: 999px;
+  background: var(--m-soft);
+}
+.menu__price-label {
+  font-family: var(--font-ui);
+  font-size: calc(10px * var(--fit));
+  letter-spacing: calc(2.5px * var(--fit));
+  text-transform: uppercase;
+  color: var(--m-muted);
+  margin: 0 0 calc(2px * var(--fit));
+  font-weight: 700;
+}
+.menu__price-value {
+  font-family: var(--font-display);
+  font-size: calc(30px * var(--fit));
+  font-weight: 600;
+  color: var(--m-brass);
+  margin: 0;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rodapé */
+.menu__footer {
+  flex: 0 0 auto;
+  text-align: center;
+  margin-top: calc(10px * var(--fit));
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: calc(14px * var(--fit));
+  color: var(--m-muted);
+}
+
+.menu__empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--m-muted);
+  font-style: italic;
+  padding: 24px;
+  font-family: var(--font-display);
+}
+
+/* ============================================================
+   Tamanhos-base do STORY (canvas 1080x1920) — maiores que o print
+   para se manter legível mesmo sem template associado. Cada
+   template de story (PART B) afina ainda mais estes valores.
+   ============================================================ */
+.menu[data-format="story"] .menu__header {
+  padding-top: calc(4px * var(--fit));
+}
+.menu[data-format="story"] .menu__logo {
+  max-height: calc(120px * var(--fit));
+  margin-bottom: calc(14px * var(--fit));
+}
+.menu[data-format="story"] .menu__restaurant {
+  font-size: calc(64px * var(--fit));
+  letter-spacing: -0.6px;
+}
+.menu[data-format="story"] .menu__tagline {
+  font-size: calc(20px * var(--fit));
+  margin-top: calc(8px * var(--fit));
+}
+.menu[data-format="story"] .menu__rule {
+  margin: calc(16px * var(--fit)) 0 calc(14px * var(--fit));
+}
+.menu[data-format="story"] .menu__rule::before,
+.menu[data-format="story"] .menu__rule::after {
+  width: calc(76px * var(--fit));
+}
+.menu[data-format="story"] .menu__rule i {
+  width: calc(10px * var(--fit));
+  height: calc(10px * var(--fit));
+  margin: 0 calc(15px * var(--fit));
+}
+.menu[data-format="story"] .menu__eyebrow {
+  font-size: calc(20px * var(--fit));
+  letter-spacing: calc(6px * var(--fit));
+}
+.menu[data-format="story"] .menu__date {
+  font-size: calc(26px * var(--fit));
+  margin-top: calc(6px * var(--fit));
+}
+.menu[data-format="story"] .menu__includes {
+  margin: calc(19px * var(--fit)) auto calc(3px * var(--fit));
+  padding: calc(13px * var(--fit)) calc(24px * var(--fit));
+}
+.menu[data-format="story"] .menu__includes-label {
+  font-size: calc(14px * var(--fit));
+  letter-spacing: calc(3.5px * var(--fit));
+}
+.menu[data-format="story"] .menu__includes-value {
+  font-size: calc(30px * var(--fit));
+}
+.menu[data-format="story"] .menu__soup {
+  font-size: calc(34px * var(--fit));
+  margin-top: calc(9px * var(--fit));
+}
+.menu[data-format="story"] .menu__soup span {
+  font-size: calc(14px * var(--fit));
+}
+.menu[data-format="story"] .menu__dishes-block {
+  margin-top: calc(19px * var(--fit));
+}
+.menu[data-format="story"] .menu__dishes-title {
+  font-size: calc(24px * var(--fit));
+  letter-spacing: calc(4.5px * var(--fit));
+  margin-bottom: calc(6px * var(--fit));
+}
+.menu[data-format="story"] .menu__dish {
+  font-size: calc(50px * var(--fit));
+  padding: calc(5px * var(--fit)) 0;
+}
+.menu[data-format="story"] .menu__price-box {
+  margin: calc(19px * var(--fit)) auto calc(6px * var(--fit));
+  padding: calc(13px * var(--fit)) calc(38px * var(--fit));
+}
+.menu[data-format="story"] .menu__price-label {
+  font-size: calc(14px * var(--fit));
+  letter-spacing: calc(3.5px * var(--fit));
+}
+.menu[data-format="story"] .menu__price-value {
+  font-size: calc(72px * var(--fit));
+}
+.menu[data-format="story"] .menu__footer {
+  font-size: calc(30px * var(--fit));
+  margin-top: calc(14px * var(--fit));
+}
+
+/* ---------------- Impressão ---------------- */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff;
+  }
+  .layout {
+    display: block;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+  .preview {
+    position: static;
+  }
+  .menu-wrap {
+    display: block;
+    height: auto !important;
+  }
+  .menu-scale {
+    transform: none !important;
+  }
+  .menu[data-format="print"] {
+    width: 210mm;
+    height: 297mm;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
