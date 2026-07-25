@@ -10,6 +10,15 @@
    não da loja.
    ============================================================ */
 
+/**
+ * O prefixo de todas as chaves guardadas.
+ *
+ * NÃO acompanha o nome da app. Quando o produto passou a chamar-se Tabuleta,
+ * este valor ficou como estava de propósito: mudá-lo tornaria invisíveis, de
+ * um dia para o outro, os dados de todos os restaurantes que já usavam a app —
+ * a marca e o histórico inteiro. É um identificador interno; o utilizador
+ * nunca o vê, e não há nada a ganhar em alinhá-lo com a marca.
+ */
 export const NAMESPACE = "prato-do-dia";
 export const SCHEMA_VERSION = 4;
 export const DEFAULT_STORE_ID = "default";

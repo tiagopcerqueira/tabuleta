@@ -1,5 +1,5 @@
 /* ============================================================
-   Prato do Dia — templates do menu (camada estética)
+   Tabuleta — templates do menu (camada estética)
 
    Oito templates: quatro para imprimir (fundo branco, poupa tinteiro) e
    quatro para stories (criativos, fundo pintado).
@@ -215,7 +215,10 @@
   border-right: 3px solid var(--m-brass);
 }
 
-/* ---------- PRINT 4/4 — tabuleta: ementa formal ---------- */
+/* ---------- PRINT 4/4 — "Solar": ementa formal.
+   O seletor continua a ser [data-template="tabuleta"]: o id está guardado nas
+   definições de quem escolheu este template, e só o rótulo visível mudou,
+   quando a app passou a chamar-se Tabuleta. ---------- */
 .menu[data-template="tabuleta"] {
   --m-paper: #ffffff;
   --m-paper-2: #ffffff;

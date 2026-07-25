@@ -1,5 +1,5 @@
 /* ============================================================
-   Prato do Dia — service worker
+   Tabuleta — service worker
 
    A versão abaixo é escrita por `npm run release`, a partir do package.json.
    Não editar à mão: antes, a mesma versão estava repetida em cinco sítios e
@@ -7,19 +7,19 @@
    utilizador — um sintoma difícil de diagnosticar à distância.
    ============================================================ */
 
-const VERSION = "10.0.0"; /* gerado */
-const CACHE = `prato-do-dia-v${VERSION}`;
+const VERSION = "10.1.0"; /* gerado */
+const CACHE = `tabuleta-v${VERSION}`;
 
 const ASSETS = [
   "./",
   "index.html",
   "manifest.json",
-  "assets/html2canvas.min.js?v=10.0.0",
-  "styles/app.css?v=10.0.0",
-  "styles/base.css?v=10.0.0",
-  "styles/menu.css?v=10.0.0",
-  "styles/templates.css?v=10.0.0",
-  "src/main.js?v=10.0.0",
+  "assets/html2canvas.min.js?v=10.1.0",
+  "styles/app.css?v=10.1.0",
+  "styles/base.css?v=10.1.0",
+  "styles/menu.css?v=10.1.0",
+  "styles/templates.css?v=10.1.0",
+  "src/main.js?v=10.1.0",
   "src/app/dom.js",
   "src/app/editor-view.js",
   "src/app/exporter.js",

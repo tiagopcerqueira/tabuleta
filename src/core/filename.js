@@ -5,7 +5,17 @@
 import { slugify } from "./text.js";
 import { todayISO } from "./date.js";
 
+/**
+ * Nome de recurso para o cartaz, quando o restaurante ainda não tem nome.
+ *
+ * Descreve o CONTEÚDO, não a aplicação: o ficheiro vai parar à pasta de
+ * transferências do utilizador, onde "prato-do-dia-2026-07-25-a4.png" diz o
+ * que é e "tabuleta-2026-07-25-a4.png" não diz nada.
+ */
 const FALLBACK_BASE = "prato-do-dia";
+
+/** A cópia de segurança é da aplicação, por isso essa leva mesmo o nome dela. */
+const BACKUP_BASE = "tabuleta";
 
 /**
  * "Tasca do Manel" + sobremesas + 2026-07-24 + story
@@ -25,5 +35,5 @@ export function buildFileName({ restaurant, kind, date, format }, now = new Date
 
 /** Nome do ficheiro de cópia de segurança. */
 export function buildBackupFileName(now = new Date()) {
-  return `${FALLBACK_BASE}-backup-${todayISO(now)}.json`;
+  return `${BACKUP_BASE}-backup-${todayISO(now)}.json`;
 }

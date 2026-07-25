@@ -1,14 +1,16 @@
-# 🍲 Prato do Dia — Gerador de Menu
+# 🍲 Tabuleta — Menu do Dia
 
-App simples para o restaurante escrever os **pratos do dia** numa interface intuitiva
-e gerar automaticamente um **menu bonito** para mostrar aos clientes — pronto a
-**imprimir em A4** ou a **publicar nos stories do Instagram e Facebook**.
+**O prato do dia do teu restaurante, pronto a imprimir ou a publicar em 10 segundos.**
+
+Escreve a sopa e os pratos numa interface simples, e a Tabuleta gera um **menu bonito**
+para mostrar aos clientes — pronto a **imprimir em A4** ou a **publicar nos stories do
+Instagram e Facebook**.
 
 Feita para ser fácil de usar por qualquer pessoa, sem instalação e **sem precisar de internet**.
 
 ## Como funciona
 
-O **Prato do Dia** inclui sempre: **sopa, pão, bebida, café e um prato à escolha**.
+O **prato do dia** inclui sempre: **sopa, pão, bebida, café e um prato à escolha**.
 O utilizador só precisa de escrever **a sopa** e a **lista de pratos disponíveis** nesse dia
 (podem ser 4, 5 ou 10+). O template encaixa tudo **numa única folha A4** e **ajusta o
 espaçamento e o tamanho do texto** automaticamente conforme o número de pratos.
@@ -37,7 +39,7 @@ espaçamento e o tamanho do texto** automaticamente conforme o número de pratos
 - ✅ **Dois geradores**: **Prato do dia** e **Sobremesas** — alterna no topo do editor. Cada um tem a sua lista diária independente; a marca e os templates são partilhados.
 - ✅ **Dois formatos**: **Imprimir (A4)** e **Story (9:16)** para Instagram/Facebook.
 - ✅ **8 templates** que mudam cor, tipografia e disposição:
-  - Imprimir (fundo branco): **Clássico**, **Moderno**, **Bistrô**, **Tabuleta**.
+  - Imprimir (fundo branco): **Clássico**, **Moderno**, **Bistrô**, **Solar**.
   - Story (criativos): **Ardósia**, **Vibrante**, **Fresco**, **Editorial**.
 - ✅ **Logótipo** do restaurante (carrega uma imagem — fica em todos os menus).
 - ✅ **Marca** definida uma vez (logótipo, nome, frase) com **sugestões** do nome do restaurante e das frases já usadas.

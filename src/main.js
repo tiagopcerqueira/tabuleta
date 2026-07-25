@@ -1,5 +1,5 @@
 /* ============================================================
-   Prato do Dia — arranque e ligações.
+   Tabuleta — arranque e ligações.
 
    Este ficheiro liga as peças e não contém regras de negócio. Tudo o que é
    decisão sobre dados vive em src/core (puro, testado) e src/data (guardar,

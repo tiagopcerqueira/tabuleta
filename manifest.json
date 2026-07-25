@@ -1,7 +1,7 @@
 {
-  "name": "Prato do Dia — Gerador de Menu",
-  "short_name": "Prato do Dia",
-  "description": "Escreve a sopa e os pratos e gera o menu do dia numa folha A4, pronto a imprimir ou partilhar.",
+  "name": "Tabuleta — Menu do Dia",
+  "short_name": "Tabuleta",
+  "description": "O prato do dia do teu restaurante, pronto a imprimir ou a publicar em 10 segundos.",
   "lang": "pt",
   "start_url": "./",
   "scope": "./",
@@ -26,5 +26,5 @@
       "purpose": "maskable"
     }
   ],
-  "version": "10.0.0"
+  "version": "10.1.0"
 }

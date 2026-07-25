@@ -41,6 +41,21 @@ export function createExporter({ elements, getState, toast, modal }) {
     });
   }
 
+  /**
+   * Como identificar o menu fora da app — no diálogo de impressão e na partilha
+   * do sistema.
+   *
+   * É o restaurante que se nomeia, não a ferramenta: quem imprime para PDF vê
+   * este texto como nome sugerido do ficheiro, e "Tabuleta.pdf" na pasta de
+   * transferências não diz nada a ninguém.
+   */
+  function documentTitle() {
+    const state = getState();
+    const restaurant = (state.restaurant || "").trim();
+    const what = state.kind === "sobremesas" ? "Sobremesas" : "Prato do Dia";
+    return restaurant ? `${restaurant} — ${what}` : what;
+  }
+
   /** Captura o menu à resolução nativa do formato ativo. */
   async function renderPng(button) {
     if (typeof window.html2canvas !== "function") {
@@ -117,7 +132,9 @@ export function createExporter({ elements, getState, toast, modal }) {
     const doc = win.document;
     doc.open();
     doc.write(
-      '<!doctype html><html><head><meta charset="utf-8"><title>Prato do Dia</title>' +
+      '<!doctype html><html><head><meta charset="utf-8"><title>' +
+        documentTitle().replace(/[<&]/g, "") +
+        "</title>" +
         "<style>@page{size:A4;margin:0}html,body{margin:0;padding:0}" +
         "img{width:100%;height:auto;display:block}</style></head><body></body></html>"
     );
@@ -152,7 +169,7 @@ export function createExporter({ elements, getState, toast, modal }) {
       const file = new File([blob], fileNameNow(), { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "Prato do Dia" });
+        await navigator.share({ files: [file], title: documentTitle() });
         return;
       }
       openPreview(dataUrl);

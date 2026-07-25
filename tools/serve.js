@@ -59,5 +59,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Prato do Dia em http://localhost:${PORT}`);
+  console.log(`Tabuleta em http://localhost:${PORT}`);
 });

@@ -45,6 +45,17 @@ test("o nome do ficheiro nunca contém caracteres problemáticos", () => {
   assert.match(nome, /^[a-z0-9-]+\.png$/);
 });
 
-test("o backup usa a data de hoje", () => {
-  assert.equal(buildBackupFileName(new Date(2026, 6, 24)), "prato-do-dia-backup-2026-07-24.json");
+/* ============================================================
+   Dois nomes diferentes, de propósito: o cartaz é do restaurante e vai para a
+   pasta de transferências, por isso descreve-se pelo conteúdo; a cópia de
+   segurança é da aplicação, e é essa que leva o nome dela.
+   ============================================================ */
+test("a cópia de segurança leva o nome da aplicação e a data de hoje", () => {
+  assert.equal(buildBackupFileName(new Date(2026, 6, 24)), "tabuleta-backup-2026-07-24.json");
+});
+
+test("o cartaz sem nome de restaurante descreve-se pelo conteúdo, não pela app", () => {
+  const nome = buildFileName({ restaurant: "", kind: "prato", date: "2026-07-24", format: "print" });
+  assert.equal(nome, "prato-do-dia-2026-07-24-a4.png");
+  assert.equal(nome.includes("tabuleta"), false);
 });

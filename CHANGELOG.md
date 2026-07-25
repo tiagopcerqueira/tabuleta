@@ -5,6 +5,34 @@ Versões segundo [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [10.1.0] — 2026-07-25
+
+### Alterado
+
+- **A app passa a chamar-se Tabuleta.** "Prato do Dia" era o nome daquilo que o
+  cliente produz, não da ferramenta — impossível de proteger como marca e a
+  competir em pesquisa com o próprio termo genérico. O prato do dia continua a
+  ser o que a app faz, e continua a ser o que se lê no cartaz impresso.
+- O template de impressão "Tabuleta" passou a chamar-se **"Solar"**, para não
+  colidir com o nome da app. **O identificador interno não mudou**: quem já o
+  tinha escolhido continua com ele.
+- O nome que aparece no diálogo de impressão e na partilha do sistema passa a
+  ser o do restaurante, não o da ferramenta — quem imprime para PDF via
+  "Tabuleta.pdf" na pasta de transferências, o que não ajudava ninguém.
+- A cópia de segurança passa a chamar-se `tabuleta-backup-<data>.json`. O cartaz
+  exportado mantém `prato-do-dia-<data>.png` quando não há nome de restaurante,
+  porque esse ficheiro descreve o conteúdo, não a aplicação.
+
+### Inalterado por segurança
+
+- **O prefixo do armazenamento e a marca dos ficheiros de cópia de segurança
+  mantêm-se.** Alinhá-los com a marca nova tornaria invisíveis, de um dia para
+  o outro, os dados de todos os restaurantes que já usam a app, e faria recusar
+  as cópias de segurança já exportadas. São identificadores internos que o
+  utilizador nunca vê.
+
+---
+
 ## [10.0.0] — 2026-07-25
 
 Reestruturação interna completa. **Nenhuma funcionalidade nova e nenhuma

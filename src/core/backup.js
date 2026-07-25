@@ -15,6 +15,13 @@ import { sanitizeSettings, extractSettings } from "./settings.js";
 import { sanitizeDay, isEmptyDay } from "./day.js";
 import { isValidISO } from "./date.js";
 
+/**
+ * Marca de identificação dos ficheiros de cópia de segurança.
+ *
+ * Como o prefixo do armazenamento, não acompanha o nome do produto: alterá-lo
+ * faria a app recusar todas as cópias já exportadas pelos utilizadores, logo
+ * no momento em que mais precisassem delas.
+ */
 export const BACKUP_APP_ID = "prato-do-dia";
 export const BACKUP_VERSION = 4;
 

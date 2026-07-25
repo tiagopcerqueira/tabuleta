@@ -1,8 +1,8 @@
 {
-  "name": "prato-do-dia",
-  "version": "10.0.0",
+  "name": "tabuleta",
+  "version": "10.1.0",
   "private": true,
-  "description": "Gerador de menu diário para restaurantes — app estática, offline-first, sem backend.",
+  "description": "Tabuleta — o prato do dia do teu restaurante, pronto a imprimir ou a publicar. App estática, offline-first, sem backend.",
   "license": "MIT",
   "type": "module",
   "engines": {
