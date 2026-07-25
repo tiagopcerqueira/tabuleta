@@ -215,11 +215,8 @@
   border-right: 3px solid var(--m-brass);
 }
 
-/* ---------- PRINT 4/4 — "Solar": ementa formal.
-   O seletor continua a ser [data-template="tabuleta"]: o id está guardado nas
-   definições de quem escolheu este template, e só o rótulo visível mudou,
-   quando a app passou a chamar-se Tabuleta. ---------- */
-.menu[data-template="tabuleta"] {
+/* ---------- PRINT 4/4 — solar: ementa formal ---------- */
+.menu[data-template="solar"] {
   --m-paper: #ffffff;
   --m-paper-2: #ffffff;
   --m-ink: #3a2f2a;
@@ -229,7 +226,7 @@
   --m-border: #d8c9a0;
   --m-soft: #f7eee0;
 }
-.menu[data-template="tabuleta"]::before {
+.menu[data-template="solar"]::before {
   content: "";
   position: absolute;
   inset: calc(9mm * var(--fit));
@@ -240,7 +237,7 @@
   pointer-events: none;
   z-index: 0;
 }
-.menu[data-template="tabuleta"]::after {
+.menu[data-template="solar"]::after {
   content: "❦";
   position: absolute;
   top: calc(5mm * var(--fit));
@@ -252,25 +249,25 @@
   pointer-events: none;
   z-index: 1;
 }
-.menu[data-template="tabuleta"] .menu__restaurant {
+.menu[data-template="solar"] .menu__restaurant {
   font-variant: small-caps;
   letter-spacing: calc(1px * var(--fit));
 }
-.menu[data-template="tabuleta"] .menu__eyebrow {
+.menu[data-template="solar"] .menu__eyebrow {
   letter-spacing: calc(5px * var(--fit));
 }
-.menu[data-template="tabuleta"] .menu__dishes-title,
-.menu[data-template="tabuleta"] .menu__includes-label {
+.menu[data-template="solar"] .menu__dishes-title,
+.menu[data-template="solar"] .menu__includes-label {
   text-transform: none;
   font-variant: small-caps;
   font-family: var(--font-display);
   letter-spacing: calc(1.5px * var(--fit));
 }
-.menu[data-template="tabuleta"] .menu__dish {
+.menu[data-template="solar"] .menu__dish {
   letter-spacing: 0.3px;
   line-height: 1.55;
 }
-.menu[data-template="tabuleta"] .menu__dish:not(:last-child)::after {
+.menu[data-template="solar"] .menu__dish:not(:last-child)::after {
   content: "";
   display: block;
   width: calc(4px * var(--fit));
@@ -279,11 +276,11 @@
   border-radius: 50%;
   margin: calc(7px * var(--fit)) auto 0;
 }
-.menu[data-template="tabuleta"] .menu__price-box {
+.menu[data-template="solar"] .menu__price-box {
   border: 1.5px solid var(--m-accent);
   background: transparent;
 }
-.menu[data-template="tabuleta"] .menu__price-value {
+.menu[data-template="solar"] .menu__price-value {
   color: var(--m-accent);
 }
 

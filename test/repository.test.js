@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { createStorage, createMemoryBackend, StorageFailure } from "../src/data/storage.js";
 import { createRepository } from "../src/data/repository.js";
-import { storeKeys, GLOBAL_KEYS, LEGACY_KEYS } from "../src/data/keys.js";
+import { storeKeys, GLOBAL_KEYS, SCHEMA_VERSION } from "../src/data/keys.js";
 
 const keys = storeKeys("default");
 
@@ -302,24 +302,27 @@ test("o snapshot não muda quando o repositório muda a seguir", () => {
   assert.equal("2026-07-25" in antes.days, false);
 });
 
-/* ---------------- Migração ao arrancar ---------------- */
+/* ============================================================
+   Migração ao arrancar.
 
-test("dados de um esquema antigo são migrados e gravados logo no arranque", () => {
+   Quando os dados vêm de outra versão do esquema, gravam-se já na forma nova
+   em vez de se esperar por uma alteração do utilizador — quem abre a app e a
+   fecha logo a seguir não pode ficar com a migração por concluir.
+   ============================================================ */
+test("dados de outro esquema são gravados na forma atual logo no arranque", () => {
   const backend = createMemoryBackend({
-    [LEGACY_KEYS.v3]: JSON.stringify({ settings: { restaurant: "Tasca Antiga" } }),
-    [LEGACY_KEYS.historyV1]: JSON.stringify({
-      days: { "2026-07-20": { soup: "Canja", dishes: ["Cozido"], desserts: ["Pudim"] } },
+    [GLOBAL_KEYS.meta]: JSON.stringify({ schemaVersion: SCHEMA_VERSION + 1 }),
+    [keys.settings]: JSON.stringify({ restaurant: "Tasca Antiga" }),
+    [keys.history]: JSON.stringify({
+      days: { "2026-07-20": { soup: "Canja", dishes: ["Cozido"], desserts: [] } },
     }),
   });
   const storage = createStorage(backend);
   const repo = createRepository({ storage, scheduler: fakeScheduler() });
 
-  assert.equal(repo.migratedFrom, 3);
-  // Já gravado na forma nova, sem esperar por nenhuma alteração do utilizador
+  assert.equal(repo.migratedFrom, SCHEMA_VERSION + 1);
   assert.equal(JSON.parse(backend.getItem(keys.settings)).restaurant, "Tasca Antiga");
-  assert.deepEqual(JSON.parse(backend.getItem(keys.history)).days["2026-07-20"].desserts, [
-    { name: "Pudim", price: "" },
-  ]);
+  assert.equal(JSON.parse(backend.getItem(GLOBAL_KEYS.meta)).schemaVersion, SCHEMA_VERSION);
 });
 
 /* ---------------- Sem armazenamento ---------------- */

@@ -12,9 +12,6 @@
 
 import { trimmed } from "./text.js";
 
-/** Marca deixada pela normalização defeituosa anterior (String() sobre um objeto). */
-const CORRUPTED_MARKER = "[object Object]";
-
 export function emptyDay() {
   return { soup: "", dishes: [], desserts: [], updatedAt: null };
 }
@@ -32,26 +29,17 @@ export function emptyDesserts() {
   ];
 }
 
-/**
- * Normaliza uma sobremesa qualquer para {name, price}.
- * Aceita as duas formas históricas: texto simples (esquema antigo) e objeto.
- */
+/** Normaliza uma sobremesa para {name, price}, venha ela como vier. */
 function sanitizeDessert(value) {
-  if (typeof value === "string") return { name: trimmed(value), price: "" };
   if (value && typeof value === "object") {
     return { name: trimmed(value.name), price: trimmed(value.price) };
   }
   return { name: "", price: "" };
 }
 
-/**
- * Uma sobremesa só conta se tiver nome — e se esse nome não for o resto de uma
- * importação corrompida. "[object Object]" nunca é um nome legítimo, por isso
- * descartá-lo repara silenciosamente os dados de quem já importou um backup
- * antes da correção, em vez de os arrastar para sempre.
- */
+/** Uma sobremesa sem nome não é uma sobremesa. */
 function isUsableDessert(dessert) {
-  return dessert.name !== "" && dessert.name !== CORRUPTED_MARKER;
+  return dessert.name !== "";
 }
 
 export function copyDesserts(list) {

@@ -1,23 +1,26 @@
 /* ============================================================
    Migrações de esquema.
 
-   Regras que valem para todas as versões futuras:
+   Hoje só existe a versão 1, por isso não há nada para migrar e este ficheiro
+   limita-se a ler. O mecanismo fica montado — a versão guardada é comparada
+   com a atual, e é aqui que entra a primeira migração a sério.
 
-   1. As chaves antigas NÃO são apagadas. Se uma versão nova tiver um defeito,
-      o utilizador pode voltar atrás com os dados intactos. O custo é alguns
-      quilobytes; o benefício é nunca destruir o histórico de um restaurante.
-   2. Uma migração nunca inventa dados: normaliza o que existe e descarta o que
+   Regras que valem para todas as versões futuras, quando as houver:
+
+   1. Uma migração nunca inventa dados: normaliza o que existe e descarta o que
       não é recuperável.
-   3. Migrar é idempotente — correr duas vezes dá o mesmo resultado.
-   4. Toda a normalização passa por sanitizeSettings/sanitizeDay. Nenhuma
-      migração tem interpretação própria da forma dos dados.
+   2. Migrar é idempotente — correr duas vezes dá o mesmo resultado.
+   3. Toda a normalização passa por sanitizeSettings/sanitizeDay. Nenhuma
+      migração tem interpretação própria da forma dos dados; foi precisamente
+      uma normalização paralela que, no protótipo anterior, transformava as
+      sobremesas importadas em "[object Object]".
+   4. Escrever no esquema novo sem apagar o antigo, para que uma versão com
+      defeito possa ser revertida sem destruir o histórico de um restaurante.
    ============================================================ */
 
 import { sanitizeSettings } from "../core/settings.js";
 import { sanitizeHistory } from "../core/history.js";
-import { sanitizeDay, isEmptyDay } from "../core/day.js";
-import { isValidISO } from "../core/date.js";
-import { SCHEMA_VERSION, GLOBAL_KEYS, LEGACY_KEYS, storeKeys } from "./keys.js";
+import { SCHEMA_VERSION, GLOBAL_KEYS, storeKeys } from "./keys.js";
 
 /**
  * Lê o estado guardado, migrando-o para o esquema atual se necessário.
@@ -29,87 +32,32 @@ export function loadMigrated(storage, storeId) {
   const meta = storage.readJSON(GLOBAL_KEYS.meta);
   const storedVersion = meta.ok && meta.value ? Number(meta.value.schemaVersion) || 0 : 0;
 
-  // Caminho normal: já está na versão atual.
-  if (storedVersion === SCHEMA_VERSION) {
-    return {
-      settings: readCurrentSettings(storage, keys),
-      days: readCurrentHistory(storage, keys),
-      migratedFrom: null,
-    };
-  }
+  // Não há versões anteriores para converter. `migratedFrom` continua a fazer
+  // parte do contrato porque é o que a app usa para saber que deve gravar já.
+  const migratedFrom = storedVersion !== 0 && storedVersion !== SCHEMA_VERSION ? storedVersion : null;
 
-  // Instalação nova ou vinda de um esquema anterior.
-  const legacy = readLegacy(storage);
-  if (legacy) {
-    return { settings: legacy.settings, days: legacy.days, migratedFrom: legacy.from };
-  }
-
-  // Sem nada guardado: pode ainda assim haver dados na versão atual sem `meta`
-  // (por exemplo, se a gravação do meta falhou por falta de espaço).
   return {
-    settings: readCurrentSettings(storage, keys),
-    days: readCurrentHistory(storage, keys),
-    migratedFrom: null,
+    settings: readSettings(storage, keys),
+    days: readHistory(storage, keys),
+    migratedFrom,
   };
 }
 
-function readCurrentSettings(storage, keys) {
+function readSettings(storage, keys) {
   const stored = storage.readJSON(keys.settings);
   const settings = sanitizeSettings(stored.ok ? stored.value : null);
-  const logo = storage.readText(keys.logo);
   // O logótipo vive à parte, mas para o resto da app faz parte das definições.
+  const logo = storage.readText(keys.logo);
   settings.logo = sanitizeSettings({ logo: logo.ok ? logo.value : "" }).logo;
   return settings;
 }
 
-function readCurrentHistory(storage, keys) {
+function readHistory(storage, keys) {
   const stored = storage.readJSON(keys.history);
   return sanitizeHistory(stored.ok ? stored.value : null).days;
 }
 
-/**
- * Lê os esquemas anteriores, do mais recente para o mais antigo.
- * Devolve null quando não há nada de anterior.
- */
-function readLegacy(storage) {
-  const v3 = readV3(storage);
-  if (v3) return v3;
-  return readV2(storage);
-}
-
-/** v3: definições em `:v3` e dias em `:history:v1`. */
-function readV3(storage) {
-  const stored = storage.readJSON(LEGACY_KEYS.v3);
-  if (!stored.ok || !stored.value || typeof stored.value !== "object") return null;
-
-  const settings = sanitizeSettings(stored.value.settings);
-  const history = storage.readJSON(LEGACY_KEYS.historyV1);
-  const days = sanitizeHistory(history.ok ? history.value : null).days;
-
-  return { settings, days, from: 3 };
-}
-
-/**
- * v2: um único objeto plano, com o menu do próprio dia lá dentro em vez de num
- * histórico. Esse dia é recuperado para o histórico para não se perder.
- */
-function readV2(storage) {
-  const stored = storage.readJSON(LEGACY_KEYS.v2);
-  if (!stored.ok || !stored.value || typeof stored.value !== "object") return null;
-
-  const raw = stored.value;
-  const settings = sanitizeSettings(raw);
-  const days = {};
-
-  if (isValidISO(raw.date)) {
-    const day = sanitizeDay({ soup: raw.soup, dishes: raw.dishes, desserts: raw.desserts });
-    if (!isEmptyDay(day)) days[raw.date] = day;
-  }
-
-  return { settings, days, from: 2 };
-}
-
-/** Regista que os dados já estão no esquema atual. */
+/** Regista que os dados estão no esquema atual. */
 export function markMigrated(storage, now = new Date()) {
   return storage.writeJSON(GLOBAL_KEYS.meta, {
     schemaVersion: SCHEMA_VERSION,

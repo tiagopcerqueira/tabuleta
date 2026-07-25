@@ -74,49 +74,30 @@ test("uma segunda viagem de ida e volta não degrada nada", () => {
   assert.deepEqual(second.settings, first.settings);
 });
 
-test("lê ficheiros do esquema antigo, em que as sobremesas eram texto simples", () => {
-  const legacy = JSON.stringify({
-    app: "prato-do-dia",
-    version: 3,
+test("um ficheiro com sobremesas mal formadas não rebenta a importação", () => {
+  const estranho = JSON.stringify({
+    app: "tabuleta",
+    version: 1,
     settings: defaultSettings(),
     days: {
-      "2026-07-20": { soup: "Canja", dishes: ["Cozido"], desserts: ["Leite-creme", "Pudim"] },
-    },
-  });
-
-  const result = parseBackup(legacy);
-
-  assert.equal(result.ok, true);
-  assert.deepEqual(result.days["2026-07-20"].desserts, [
-    { name: "Leite-creme", price: "" },
-    { name: "Pudim", price: "" },
-  ]);
-});
-
-test("repara dias já corrompidos por uma importação anterior", () => {
-  const corrupted = JSON.stringify({
-    app: "prato-do-dia",
-    version: 3,
-    settings: defaultSettings(),
-    days: {
-      "2026-07-19": {
+      "2026-07-20": {
         soup: "Canja",
         dishes: ["Cozido"],
-        desserts: ["[object Object]", "[object Object]"],
+        desserts: ["texto solto", null, 42, { name: "Pudim", price: "3 €" }],
       },
     },
   });
 
-  const result = parseBackup(corrupted);
+  const result = parseBackup(estranho);
 
   assert.equal(result.ok, true);
-  assert.deepEqual(result.days["2026-07-19"].desserts, []);
-  assert.equal(result.days["2026-07-19"].soup, "Canja");
+  assert.deepEqual(result.days["2026-07-20"].desserts, [{ name: "Pudim", price: "3 €" }]);
+  assert.equal(result.days["2026-07-20"].soup, "Canja");
 });
 
 test("o ficheiro exportado declara aplicação e versão", () => {
   const parsed = JSON.parse(serializeBackup(defaultSettings(), DAYS));
-  assert.equal(parsed.app, "prato-do-dia");
+  assert.equal(parsed.app, "tabuleta");
   assert.equal(parsed.version, BACKUP_VERSION);
   assert.equal(typeof parsed.exportedAt, "string");
 });
@@ -127,17 +108,17 @@ test("rejeita ficheiros inválidos sem lançar exceção", () => {
   assert.equal(parseBackup("isto não é json").reason, "json");
   assert.equal(parseBackup("null").reason, "shape");
   assert.equal(parseBackup(JSON.stringify({ app: "outra-app", settings: {}, days: {} })).reason, "app");
-  assert.equal(parseBackup(JSON.stringify({ app: "prato-do-dia", days: {} })).reason, "shape");
+  assert.equal(parseBackup(JSON.stringify({ app: "tabuleta", days: {} })).reason, "shape");
   assert.equal(
-    parseBackup(JSON.stringify({ app: "prato-do-dia", version: 99, settings: {}, days: {} })).reason,
+    parseBackup(JSON.stringify({ app: "tabuleta", version: 99, settings: {}, days: {} })).reason,
     "version"
   );
 });
 
 test("descarta chaves que não são datas válidas", () => {
   const text = JSON.stringify({
-    app: "prato-do-dia",
-    version: 4,
+    app: "tabuleta",
+    version: 1,
     settings: defaultSettings(),
     days: {
       "2026-02-30": { soup: "Inexistente", dishes: [], desserts: [] },
@@ -153,8 +134,8 @@ test("descarta chaves que não são datas válidas", () => {
 
 test("descarta dias que ficam vazios depois de normalizados", () => {
   const text = JSON.stringify({
-    app: "prato-do-dia",
-    version: 4,
+    app: "tabuleta",
+    version: 1,
     settings: defaultSettings(),
     days: {
       "2026-07-24": { soup: "   ", dishes: ["", "  "], desserts: [{ name: "", price: "5 €" }] },

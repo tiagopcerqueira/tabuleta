@@ -15,16 +15,8 @@ test("sanitizeDay aceita a forma canónica sem a alterar", () => {
   assert.deepEqual(day.desserts, [{ name: "Arroz doce", price: "3,50 €" }]);
 });
 
-test("sanitizeDay converte sobremesas do esquema antigo em texto", () => {
-  const day = sanitizeDay({ desserts: ["Leite-creme", "Pudim"] });
-  assert.deepEqual(day.desserts, [
-    { name: "Leite-creme", price: "" },
-    { name: "Pudim", price: "" },
-  ]);
-});
-
-test("sanitizeDay descarta o resto de importações corrompidas", () => {
-  const day = sanitizeDay({ desserts: ["[object Object]", { name: "Bom", price: "3 €" }] });
+test("sanitizeDay descarta sobremesas que não têm a forma esperada", () => {
+  const day = sanitizeDay({ desserts: ["texto", null, 42, [], { name: "Bom", price: "3 €" }] });
   assert.deepEqual(day.desserts, [{ name: "Bom", price: "3 €" }]);
 });
 

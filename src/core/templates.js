@@ -18,10 +18,7 @@ export const TEMPLATES = {
     { id: "classico", label: "Clássico", color: "#1c5b86" },
     { id: "moderno", label: "Moderno", color: "#c0392b" },
     { id: "bistro", label: "Bistrô", color: "#2f6b43" },
-    // O id fica "tabuleta" — é o que está guardado nas definições de quem já o
-    // escolheu, e mudá-lo faria esses menus voltarem calados ao template por
-    // omissão. Só o rótulo mudou, para não colidir com o nome da app.
-    { id: "tabuleta", label: "Solar", color: "#7c2438" },
+    { id: "solar", label: "Solar", color: "#7c2438" },
   ],
   story: [
     { id: "ardosia", label: "Ardósia", color: "#232a2d" },

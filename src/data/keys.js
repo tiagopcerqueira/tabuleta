@@ -10,17 +10,20 @@
    não da loja.
    ============================================================ */
 
+export const NAMESPACE = "tabuleta";
+
 /**
- * O prefixo de todas as chaves guardadas.
+ * Versão do esquema de armazenamento.
  *
- * NÃO acompanha o nome da app. Quando o produto passou a chamar-se Tabuleta,
- * este valor ficou como estava de propósito: mudá-lo tornaria invisíveis, de
- * um dia para o outro, os dados de todos os restaurantes que já usavam a app —
- * a marca e o histórico inteiro. É um identificador interno; o utilizador
- * nunca o vê, e não há nada a ganhar em alinhá-lo com a marca.
+ * Recomeça em 1 com a Tabuleta. Os esquemas 2 a 4 pertenciam ao protótipo
+ * anterior e nunca chegaram a ter utilizadores fora do desenvolvimento, por
+ * isso arrastar código para os ler seria manter caminhos que nada percorre —
+ * e caminhos que nada percorre são caminhos que ninguém verifica.
+ *
+ * Quando existir uma versão 2, a migração escreve-se em migrations.js e o
+ * mecanismo já cá está.
  */
-export const NAMESPACE = "prato-do-dia";
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 1;
 export const DEFAULT_STORE_ID = "default";
 
 /** Chaves de conteúdo, por loja. */
@@ -44,11 +47,4 @@ export function storeKeys(storeId = DEFAULT_STORE_ID) {
 export const GLOBAL_KEYS = {
   meta: `${NAMESPACE}:meta`,
   uiTheme: `${NAMESPACE}:ui-theme`,
-};
-
-/** Chaves dos esquemas anteriores — lidas uma vez pela migração, nunca escritas. */
-export const LEGACY_KEYS = {
-  v2: `${NAMESPACE}:v2`,
-  v3: `${NAMESPACE}:v3`,
-  historyV1: `${NAMESPACE}:history:v1`,
 };

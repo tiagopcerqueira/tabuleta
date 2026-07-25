@@ -15,18 +15,18 @@ import { sanitizeSettings, extractSettings } from "./settings.js";
 import { sanitizeDay, isEmptyDay } from "./day.js";
 import { isValidISO } from "./date.js";
 
-/**
- * Marca de identificação dos ficheiros de cópia de segurança.
- *
- * Como o prefixo do armazenamento, não acompanha o nome do produto: alterá-lo
- * faria a app recusar todas as cópias já exportadas pelos utilizadores, logo
- * no momento em que mais precisassem delas.
- */
-export const BACKUP_APP_ID = "prato-do-dia";
-export const BACKUP_VERSION = 4;
+export const BACKUP_APP_ID = "tabuleta";
+export const BACKUP_VERSION = 1;
 
-/** Versões de ficheiro que ainda sabemos ler. */
-const SUPPORTED_VERSIONS = [3, 4];
+/**
+ * Versões de ficheiro que sabemos ler.
+ *
+ * Quando o formato mudar, a versão antiga fica aqui e a leitura passa a
+ * ramificar — nunca a recusar cópias que alguém já tenha em disco. Um ficheiro
+ * de segurança que a app deixa de aceitar falha exatamente no momento em que
+ * era preciso.
+ */
+const SUPPORTED_VERSIONS = [1];
 
 export function buildBackup(settings, days, now = new Date()) {
   return {
@@ -60,9 +60,7 @@ export function parseBackup(text) {
   if (!raw.settings || typeof raw.settings !== "object") return { ok: false, reason: "shape" };
   if (!raw.days || typeof raw.days !== "object") return { ok: false, reason: "shape" };
 
-  // Ficheiros anteriores à numeração explícita não trazem `version`; assumimos a
-  // mais antiga que sabemos ler, porque a sanitização trata das duas formas.
-  const version = typeof raw.version === "number" ? raw.version : 3;
+  const version = typeof raw.version === "number" ? raw.version : BACKUP_VERSION;
   if (!SUPPORTED_VERSIONS.includes(version)) return { ok: false, reason: "version" };
 
   const days = {};

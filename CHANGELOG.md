@@ -5,31 +5,42 @@ Versões segundo [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
-## [10.1.0] — 2026-07-25
+## [11.0.0] — 2026-07-25
+
+Fim do protótipo. A app tem nome próprio, e os identificadores internos deixam
+de arrastar o nome anterior.
+
+Esta versão **não lê dados escritos por versões anteriores**. É deliberado: o
+que existia era um protótipo sem utilizadores fora do desenvolvimento, e manter
+código para converter dados que ninguém tem seria manter caminhos que nada
+percorre — e caminhos que nada percorre são caminhos que ninguém verifica.
 
 ### Alterado
 
-- **A app passa a chamar-se Tabuleta.** "Prato do Dia" era o nome daquilo que o
-  cliente produz, não da ferramenta — impossível de proteger como marca e a
-  competir em pesquisa com o próprio termo genérico. O prato do dia continua a
-  ser o que a app faz, e continua a ser o que se lê no cartaz impresso.
-- O template de impressão "Tabuleta" passou a chamar-se **"Solar"**, para não
-  colidir com o nome da app. **O identificador interno não mudou**: quem já o
-  tinha escolhido continua com ele.
-- O nome que aparece no diálogo de impressão e na partilha do sistema passa a
-  ser o do restaurante, não o da ferramenta — quem imprime para PDF via
-  "Tabuleta.pdf" na pasta de transferências, o que não ajudava ninguém.
-- A cópia de segurança passa a chamar-se `tabuleta-backup-<data>.json`. O cartaz
-  exportado mantém `prato-do-dia-<data>.png` quando não há nome de restaurante,
-  porque esse ficheiro descreve o conteúdo, não a aplicação.
+- **A app chama-se Tabuleta.** "Prato do Dia" era o nome daquilo que o cliente
+  produz, não da ferramenta — impossível de proteger como marca e a competir em
+  pesquisa com o próprio termo genérico. O prato do dia continua a ser o que a
+  app faz, e continua a ser o que se lê no cartaz impresso.
+- O prefixo das chaves de armazenamento e a marca dos ficheiros de cópia de
+  segurança passam a ser `tabuleta`.
+- O esquema de armazenamento **recomeça na versão 1**, e o formato das cópias de
+  segurança também. O mecanismo de versão e migração fica montado, para que a
+  primeira migração a sério seja um caso a mais e não uma reescrita do arranque.
+- O template de impressão passa a chamar-se **Solar** — nome e identificador —,
+  para não colidir com o nome da app.
+- O nome no diálogo de impressão e na partilha do sistema passa a ser o do
+  restaurante, não o da ferramenta: quem imprimia para PDF ficava com
+  "Tabuleta.pdf" na pasta de transferências.
+- A cópia de segurança chama-se `tabuleta-backup-<data>.json`. O cartaz mantém
+  `prato-do-dia-<data>.png` quando não há nome de restaurante, porque esse
+  ficheiro descreve o conteúdo e não a aplicação.
 
-### Inalterado por segurança
+### Removido
 
-- **O prefixo do armazenamento e a marca dos ficheiros de cópia de segurança
-  mantêm-se.** Alinhá-los com a marca nova tornaria invisíveis, de um dia para
-  o outro, os dados de todos os restaurantes que já usam a app, e faria recusar
-  as cópias de segurança já exportadas. São identificadores internos que o
-  utilizador nunca vê.
+- Leitura dos esquemas de armazenamento 2, 3 e 4 do protótipo.
+- Conversão de sobremesas guardadas como texto simples, e a reparação de dados
+  corrompidos pelo defeito de importação — ambas existiam para dados que já não
+  existem. A robustez a entradas malformadas mantém-se e continua testada.
 
 ---
 
