@@ -5,6 +5,21 @@ Versões segundo [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [11.1.1] — 2026-07-27
+
+### Corrigido
+
+- **Moderno, Vibrante e Editorial apareciam com o texto minúsculo encolhido no
+  topo, e a app avisava que havia pratos a mais.** Acontecia sempre que o preço
+  estava por preencher. Nesses três templates, o "menu inclui" leva
+  `flex: 1 0 100%` para ocupar a linha toda dentro do bloco do preço — mas sem
+  preço passa a ser filho direto do menu, que é uma coluna, e a mesma
+  declaração passa a querer dizer "ocupa 100% da altura da folha, e cresce". O
+  encaixe via a folha a transbordar e reduzia até ao mínimo. O seletor passa a
+  exigir o bloco do preço.
+
+---
+
 ## [11.1.0] — 2026-07-27
 
 Os oito templates refeitos com olhos de quem compõe ementas: o que o cliente
