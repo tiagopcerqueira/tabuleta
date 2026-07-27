@@ -18,7 +18,7 @@
    ============================================================ */
 
 export const FIT_MIN = 0.45;
-export const FIT_MAX = 1.28;
+export const FIT_MAX = 1.5;
 /** Abaixo deste fator o texto fica pequeno de mais — a interface avisa. */
 export const FIT_WARN_BELOW = 0.62;
 
@@ -29,13 +29,20 @@ const MAX_STEPS = 12;
  * Palpite inicial a partir do número de itens. Não precisa de estar certo —
  * só de estar perto, para poupar uma ou duas medições.
  */
-export function initialFit(count) {
-  if (count <= 4) return 1.28;
-  if (count <= 6) return 1.12;
-  if (count <= 8) return 1.0;
-  if (count <= 10) return 0.9;
-  if (count <= 13) return 0.8;
-  return 0.7;
+export function initialFit(count, format = "print") {
+  const guess = ceilingFor(count);
+  // O story tem uma tela muito mais alta do que a folha para o mesmo texto:
+  // com o teto do papel sobrava sempre uma faixa vazia em cima e em baixo.
+  return format === "story" ? Math.min(FIT_MAX, guess * 1.18) : guess;
+}
+
+function ceilingFor(count) {
+  if (count <= 4) return FIT_MAX;
+  if (count <= 6) return 1.28;
+  if (count <= 8) return 1.1;
+  if (count <= 10) return 0.96;
+  if (count <= 13) return 0.85;
+  return 0.75;
 }
 
 /**

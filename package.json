@@ -1,6 +1,6 @@
 {
   "name": "tabuleta",
-  "version": "11.0.0",
+  "version": "11.1.0",
   "private": true,
   "description": "Tabuleta — o prato do dia do teu restaurante, pronto a imprimir ou a publicar. App estática, offline-first, sem backend.",
   "license": "MIT",

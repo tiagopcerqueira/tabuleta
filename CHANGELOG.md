@@ -5,6 +5,56 @@ Versões segundo [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [11.1.0] — 2026-07-27
+
+Os oito templates refeitos com olhos de quem compõe ementas: o que o cliente
+precisa de perceber num relance passa a estar onde o olho vai primeiro.
+
+### Corrigido
+
+- **Os tipos de letra da app nunca chegaram a carregar.** Os `@font-face` em
+  `styles/base.css` apontavam para `assets/fonts/…`, que a partir de `/styles/`
+  resolve para `/styles/assets/fonts/…` — 404 desde a reestruturação que moveu
+  as folhas de estilo para a sua própria pasta. Todos os menus saíam em Georgia
+  e nas sans do sistema, e nenhum teste tinha como dar por isso.
+- O símbolo do euro sobrepunha-se ao último algarismo do preço na **imagem
+  exportada**: os algarismos tabulares davam ao html2canvas larguras diferentes
+  das que ele usa a desenhar. Não havia como o ver na app — só no ficheiro.
+- O corpo do menu podia ser espremido pelo bloco do preço e os pratos passavam
+  por cima dele **sem o encaixe reagir**, porque o excesso ficava escondido
+  dentro de um bloco em vez de chegar ao fim da folha.
+- O que o menu inclui deixava de aparecer quando o preço estava em branco: ao
+  passar a viver dentro do bloco do preço, desaparecia com ele. Continua ao pé
+  do preço, mas sem depender dele para existir.
+
+### Alterado
+
+- **Uma anatomia só, para os dois formatos**: marca, título, corpo, preço,
+  frase. A escala de cada formato passa a estar declarada como tokens num
+  único sítio, em vez de repetida regra a regra.
+- **O story mostra menos.** Saem a data, o subtítulo e a lista do que o menu
+  inclui; ficam a marca, o título, a sopa, os pratos, os preços e uma frase
+  discreta no fim. Um story dura um dia e é visto em três segundos.
+- **O que o menu inclui passa a estar colado ao preço**, e não no topo da
+  folha. A lista só existe para responder à pergunta que o preço levanta.
+- **Sobremesas no papel** ganham o filete a ligar o nome ao preço, como em
+  qualquer ementa impressa; **no story** o preço passa a ficar por baixo do
+  nome, porque ao lado obrigava o nome a partir-se a meio.
+- Deixa de haver dois rótulos a dizer "Sobremesas" na mesma folha.
+- Tipografia maior na folha A4 e mais folga permitida ao encaixe quando há
+  poucos pratos: a folha era lida a um metro de distância com texto de livro.
+- Cada template passa a ter **um gesto próprio** — uma moldura, uma faixa, um
+  alinhamento, um medalhão — em vez de vários ao mesmo tempo.
+- **A sopa fica junto ao cabeçalho e só os pratos se centram** no espaço que
+  sobra. Quando era o corpo inteiro a centrar-se, a sopa descolava do título e
+  ficava a pairar a meio da folha, sem pertencer a grupo nenhum.
+- Espaço entre o número e o símbolo do euro: o € da Fraunces tem os traços a
+  ultrapassar o C dos dois lados — é o desenho da fonte, mas ao tamanho do
+  preço o traço da esquerda chegava perto do último algarismo e lia-se como
+  sobreposição.
+
+---
+
 ## [11.0.0] — 2026-07-25
 
 Fim do protótipo. A app tem nome próprio, e os identificadores internos deixam

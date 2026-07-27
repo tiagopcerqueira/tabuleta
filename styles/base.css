@@ -14,28 +14,28 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url("assets/fonts/fraunces-roman.woff2") format("woff2");
+  src: url("../assets/fonts/fraunces-roman.woff2") format("woff2");
 }
 @font-face {
   font-family: "Fraunces";
   font-style: italic;
   font-weight: 400 700;
   font-display: swap;
-  src: url("assets/fonts/fraunces-italic.woff2") format("woff2");
+  src: url("../assets/fonts/fraunces-italic.woff2") format("woff2");
 }
 @font-face {
   font-family: "Archivo";
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("assets/fonts/archivo.woff2") format("woff2");
+  src: url("../assets/fonts/archivo.woff2") format("woff2");
 }
 @font-face {
   font-family: "Oswald";
   font-style: normal;
   font-weight: 200 700;
   font-display: swap;
-  src: url("assets/fonts/oswald.woff2") format("woff2");
+  src: url("../assets/fonts/oswald.woff2") format("woff2");
 }
 
 /* ---------------- Tokens da app (claro) ---------------- */

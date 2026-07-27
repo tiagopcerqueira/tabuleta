@@ -39,7 +39,7 @@ export function createMenuView({ elements }) {
    * quando nem assim cabe.
    */
   function resolveFit(model) {
-    const guess = initialFit(countVisibleItems(model));
+    const guess = initialFit(countVisibleItems(model), model.format);
     const { fit } = solveFit(overflowsAt, { max: guess });
     applyFit(fit);
     if (fitWarning) fitWarning.hidden = !shouldWarnAboutFit(fit);
