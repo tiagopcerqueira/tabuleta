@@ -1,32 +1,79 @@
 /* ============================================================
    Tabuleta — estrutura do menu
 
-   Regras estruturais comuns aos dois formatos (folha A4 e story 9:16),
-   os tamanhos-base de cada um, e as regras de impressão.
-
+   Regras estruturais comuns aos dois formatos (folha A4 e story 9:16).
    Aqui não se pinta: as cores e a tipografia de cada template vivem em
    templates.css. Esta separação é o que permite acrescentar um template
    novo sem tocar em disposição nenhuma.
 
-   O espaçamento adapta-se ao número de pratos através de --fit, que o
-   JavaScript calcula (ver src/core/fit.js).
+   Duas ideias sustentam tudo o que está abaixo:
+
+   1. UMA anatomia, duas tabelas de tamanhos. A peça tem sempre marca no
+      topo, conteúdo ao centro e preço em baixo — no papel e no story. O que
+      muda é a escala, e essa está declarada como tokens `--s-*` num único
+      sítio por formato. Antes cada tamanho do story era uma regra repetida
+      com outro valor; qualquer alteração à estrutura tinha de ser feita duas
+      vezes, e mais cedo ou mais tarde só era feita uma.
+
+   2. O conteúdo manda. Os pratos são o maior corpo de texto da peça, o preço
+      é o maior número, e tudo o resto — data, rótulos, notas — é informação
+      de serviço: pequena, discreta, agrupada junto daquilo que qualifica.
+
+   Todos os tamanhos são múltiplos de `--u`, que já traz o fator `--fit`
+   calculado pelo JavaScript (ver src/core/fit.js) para o conteúdo caber.
    ============================================================ */
 
 .menu {
-  /* tokens neutros por omissão (sem template) */
-  --m-paper: #fbfaf5;
-  --m-paper-2: #f4f1e7;
-  --m-ink: #1d3a4a;
-  --m-muted: #7c8a91;
+  /* ---- paleta neutra: cada template repinta-a por inteiro ---- */
+  --m-paper: #ffffff;
+  --m-paper-2: #ffffff;
+  --m-ink: #1e2c34;
+  --m-muted: #7d8b94;
   --m-accent: #1c5b86;
   --m-brass: #a9781f;
-  --m-border: #c7d8e6;
-  --m-soft: #eef4f8;
+  --m-border: #dde5ea;
+  --m-soft: #f3f7f9;
 
   --fit: 1;
+  --u: calc(1px * var(--fit));
+
+  /* ---- escala: folha A4 ----
+     Uma folha destas fica pousada num balcão ou colada a um vidro, e é lida
+     de pé, a um metro. Os pratos são o maior corpo de texto por isso mesmo. */
+  --s-logo: 48;
+  --s-restaurant: 36;
+  --s-tagline: 13.5;
+  --s-eyebrow: 11;
+  --s-eyebrow-track: 3.4;
+  --s-date: 12;
+  --s-label: 10;
+  --s-label-track: 2.6;
+  --s-soup: 23;
+  --s-dish: 24;
+  --s-dish-priced: 22; /* a linha com preço leva mais coisas do que um prato */
+  --s-dish-price: 16;
+  --s-price-label: 10;
+  --s-price: 40;
+  --s-includes: 11.5;
+  --s-footer: 13;
+
+  /* ---- ritmo vertical: o que está junto pertence junto ---- */
+  --s-gap-title: 15; /* marca → título */
+  --s-gap-block: 32; /* entre blocos do corpo */
+  --s-gap-dish: 13; /* entre pratos */
+  --s-gap-tight: 5; /* rótulo → o que ele nomeia */
+  --s-gap-price: 28; /* corpo → preço */
+  --s-gap-footer: 16;
+
+  /* ---- largura útil: o texto nunca chega às margens ---- */
+  --m-measure: 92%;
+  --m-rule: 48; /* filete curto sob a marca */
+  /* Maiúsculas espaçadas deixam um vão depois da última letra; sem isto o
+     bloco fica meio espaço à esquerda do centro ótico. */
+  --m-track-fix: 1;
 
   max-width: 100%;
-  background: radial-gradient(120% 80% at 50% -10%, var(--m-paper), var(--m-paper) 60%, var(--m-paper-2));
+  background: var(--m-paper);
   color: var(--m-ink);
   box-shadow: var(--shadow);
   border-radius: 3px;
@@ -36,235 +83,234 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  text-align: center;
+}
+
+/* ---- escala: story 9:16 ----
+   Menos elementos e um polegar em movimento: tudo cresce, e o que cresce
+   mais é aquilo que decide se a pessoa pára — os pratos e o preço. */
+.menu[data-format="story"] {
+  --s-logo: 106;
+  --s-restaurant: 40;
+  --s-eyebrow: 22;
+  --s-eyebrow-track: 6.5;
+  --s-label: 18;
+  --s-label-track: 5;
+  --s-soup: 46;
+  --s-dish: 56;
+  --s-dish-price: 36;
+  --s-price-label: 18;
+  --s-price: 116;
+  --s-footer: 24;
+
+  --s-gap-title: 24;
+  --s-gap-block: 66;
+  --s-gap-dish: 26;
+  --s-gap-tight: 12;
+  --s-gap-price: 66;
+  --s-gap-footer: 38;
+
+  --m-measure: 86%;
+  --m-rule: 90;
 }
 
 /* Dimensões nativas por formato */
 .menu[data-format="print"] {
   width: 210mm;
   height: 297mm;
-  padding: 16mm 18mm;
+  padding: 17mm 19mm;
 }
 .menu[data-format="story"] {
   width: 1080px;
   height: 1920px;
-  padding: 64px;
+  padding: 88px 76px;
 }
 
-/* Cabeçalho */
+/* ============================================================
+   1. Marca
+   ============================================================ */
 .menu__header {
-  text-align: center;
   flex: 0 0 auto;
-  padding-top: calc(2px * var(--fit));
+}
+.menu__logo {
+  display: block;
+  margin: 0 auto calc(var(--s-gap-tight) * var(--u) * 2);
+  max-height: calc(var(--s-logo) * var(--u));
+  max-width: 55%;
+  object-fit: contain;
 }
 .menu__restaurant {
   font-family: var(--font-display);
-  font-size: calc(38px * var(--fit));
+  font-size: calc(var(--s-restaurant) * var(--u));
   font-weight: 600;
   color: var(--m-ink);
   margin: 0;
-  line-height: 1.02;
-  letter-spacing: -0.4px;
+  line-height: 1.08;
+  letter-spacing: -0.2px;
+  text-wrap: balance;
 }
 .menu__tagline {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: calc(15px * var(--fit));
+  font-size: calc(var(--s-tagline) * var(--u));
   color: var(--m-muted);
-  margin: calc(6px * var(--fit)) 0 0;
-}
-/* Logótipo — cada template (PART B) afina a altura/margens ao seu gosto */
-.menu__logo {
-  display: block;
-  margin: 0 auto calc(8px * var(--fit));
-  max-height: calc(56px * var(--fit));
-  max-width: 60%;
-  object-fit: contain;
+  margin: calc(var(--s-gap-tight) * var(--u)) 0 0;
+  line-height: 1.35;
 }
 
-/* Divisória ornamental (hairline + losango latão) */
-.menu__rule {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: calc(12px * var(--fit)) 0 calc(10px * var(--fit));
+/* ============================================================
+   2. Título — o que é, e de que dia
+   ============================================================ */
+.menu__title {
   flex: 0 0 auto;
+  margin-top: calc(var(--s-gap-title) * var(--u));
 }
-.menu__rule::before,
-.menu__rule::after {
+/* Filete curto a separar a marca do resto. Curto de propósito: uma linha de
+   margem a margem parte a folha em dois; esta só assinala a mudança. */
+.menu__title::before {
   content: "";
+  display: block;
+  width: calc(var(--m-rule) * var(--u));
   height: 1px;
-  width: calc(56px * var(--fit));
   background: var(--m-border);
+  margin: 0 auto calc(var(--s-gap-title) * var(--u));
 }
-.menu__rule i {
-  width: calc(7px * var(--fit));
-  height: calc(7px * var(--fit));
-  background: var(--m-brass);
-  transform: rotate(45deg);
-  margin: 0 calc(11px * var(--fit));
-  border-radius: 1px;
-}
-
-/* Eyebrow + data */
 .menu__eyebrow {
-  text-align: center;
-  flex: 0 0 auto;
   font-family: var(--font-ui);
-  font-size: calc(12px * var(--fit));
+  font-size: calc(var(--s-eyebrow) * var(--u));
   font-weight: 700;
-  letter-spacing: calc(4px * var(--fit));
+  letter-spacing: calc(var(--s-eyebrow-track) * var(--u));
   text-transform: uppercase;
   color: var(--m-accent);
   margin: 0;
+  /* o espaçamento entre letras também empurra a última para fora do centro */
+  text-indent: calc(var(--s-eyebrow-track) * var(--u) * var(--m-track-fix));
 }
 .menu__date {
-  text-align: center;
-  flex: 0 0 auto;
   font-family: var(--font-ui);
-  font-size: calc(13px * var(--fit));
+  font-size: calc(var(--s-date) * var(--u));
   color: var(--m-muted);
-  margin: calc(4px * var(--fit)) 0 0;
+  margin: calc(var(--s-gap-tight) * var(--u)) 0 0;
 }
 
-/* Bloco "o menu inclui" */
-.menu__includes {
-  flex: 0 0 auto;
-  text-align: center;
-  margin: calc(14px * var(--fit)) auto calc(2px * var(--fit));
-  padding: calc(9px * var(--fit)) calc(18px * var(--fit));
-  background: var(--m-soft);
-  border-radius: 10px;
-  max-width: 92%;
+/* ============================================================
+   3. Corpo — sopa e pratos, centrados no espaço que sobra
+   ============================================================ */
+/**
+ * Cresce para ocupar o espaço livre, mas NUNCA encolhe abaixo do conteúdo.
+ *
+ * Com `flex: 1 1 auto; min-height: 0` o corpo cedia espaço ao preço e os
+ * pratos transbordavam para cima dele — e o motor de encaixe não reagia,
+ * porque a folha inteira continuava a caber: o excesso ficava escondido
+ * dentro de um bloco espremido, não no fim da página. Com `1 0 auto` o
+ * excesso chega ao fim da folha, o `scrollHeight` denuncia-o, e o encaixe
+ * reduz o fator como deve ser.
+ */
+.menu__body {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--s-gap-block) * var(--u));
+  padding: calc(var(--s-gap-block) * var(--u)) 0;
 }
-.menu__includes-label {
+
+.menu__label {
   font-family: var(--font-ui);
-  font-size: calc(10px * var(--fit));
-  letter-spacing: calc(2.5px * var(--fit));
+  font-size: calc(var(--s-label) * var(--u));
+  font-weight: 700;
+  letter-spacing: calc(var(--s-label-track) * var(--u));
   text-transform: uppercase;
   color: var(--m-muted);
-  margin: 0 0 calc(4px * var(--fit));
-  font-weight: 700;
+  margin: 0 0 calc(var(--s-gap-tight) * var(--u));
+  text-indent: calc(var(--s-label-track) * var(--u) * var(--m-track-fix));
 }
-.menu__includes-value {
-  font-family: var(--font-ui);
-  font-size: calc(14px * var(--fit));
-  color: var(--m-ink);
-  margin: 0;
-  font-weight: 500;
-}
+
 .menu__soup {
-  font-family: var(--font-display);
-  font-size: calc(15px * var(--fit));
-  color: var(--m-ink);
-  margin: calc(7px * var(--fit)) 0 0;
-}
-.menu__soup span {
-  font-family: var(--font-ui);
-  font-size: calc(10px * var(--fit));
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--m-accent);
-  font-weight: 700;
-  display: block;
-  margin-bottom: calc(1px * var(--fit));
-}
-
-/* Bloco de pratos — cresce e distribui o espaço verticalmente */
-.menu__dishes-block {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  margin-top: calc(14px * var(--fit));
-}
-.menu__dishes-title {
   flex: 0 0 auto;
-  font-family: var(--font-ui);
-  font-size: calc(12px * var(--fit));
-  font-weight: 700;
-  letter-spacing: calc(3px * var(--fit));
-  text-transform: uppercase;
-  color: var(--m-accent);
-  text-align: center;
-  margin: 0 0 calc(4px * var(--fit));
+  margin: 0;
 }
-.menu__dishes {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-}
-.menu__dish {
-  text-align: center;
+.menu__soup-name {
   font-family: var(--font-display);
+  font-size: calc(var(--s-soup) * var(--u));
   font-weight: 500;
-  font-size: calc(21px * var(--fit));
   line-height: 1.2;
   color: var(--m-ink);
-  padding: calc(3px * var(--fit)) 0;
+  margin: 0;
 }
-/* Sobremesas: cada item tem o seu preço — nome à esquerda, preço à direita.
-   (Nenhum template define `display` no .menu__dish, por isso este flex vence.) */
+
+.menu__dishes-block {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.menu__dishes {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--s-gap-dish) * var(--u));
+  width: var(--m-measure);
+  margin: 0 auto;
+}
+.menu__dish {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: calc(var(--s-dish) * var(--u));
+  line-height: 1.22;
+  color: var(--m-ink);
+  /* "Filetes de pescada com arroz de tomate" não cabe sempre numa linha. Se
+     tiver de partir, que parta em duas linhas equilibradas e não com uma
+     palavra órfã em baixo. */
+  text-wrap: balance;
+}
+
+/* Sobremesas no papel: nome, filete, preço — a linha da ementa de sempre. */
 .menu__dish--priced {
+  font-size: calc(var(--s-dish-priced) * var(--u));
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: calc(16px * var(--fit));
+  gap: calc(10px * var(--fit));
   text-align: left;
 }
 .menu__dish-name {
+  flex: 0 1 auto;
   min-width: 0;
+}
+.menu__dish-leader {
+  flex: 1 1 auto;
+  min-width: calc(18px * var(--fit));
+  height: 1px;
+  background: var(--m-border);
+  margin-bottom: calc(5px * var(--fit));
 }
 .menu__dish-price {
   flex: 0 0 auto;
-  color: var(--m-accent);
   font-family: var(--font-ui);
-  font-weight: 700;
-  font-size: 0.58em;
-  letter-spacing: 0;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Medalhão de preço */
-.menu__price-box {
-  flex: 0 0 auto;
-  align-self: center;
-  margin: calc(14px * var(--fit)) auto calc(4px * var(--fit));
-  text-align: center;
-  padding: calc(9px * var(--fit)) calc(26px * var(--fit));
-  border: 1.5px solid var(--m-brass);
-  border-radius: 999px;
-  background: var(--m-soft);
-}
-.menu__price-label {
-  font-family: var(--font-ui);
-  font-size: calc(10px * var(--fit));
-  letter-spacing: calc(2.5px * var(--fit));
-  text-transform: uppercase;
-  color: var(--m-muted);
-  margin: 0 0 calc(2px * var(--fit));
-  font-weight: 700;
-}
-.menu__price-value {
-  font-family: var(--font-display);
-  font-size: calc(30px * var(--fit));
   font-weight: 600;
-  color: var(--m-brass);
-  margin: 0;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+  font-size: calc(var(--s-dish-price) * var(--u));
+  color: var(--m-ink);
+  white-space: nowrap;
 }
 
-/* Rodapé */
-.menu__footer {
-  flex: 0 0 auto;
-  text-align: center;
-  margin-top: calc(10px * var(--fit));
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: calc(14px * var(--fit));
-  color: var(--m-muted);
+/**
+ * Sobremesas no story: preço POR BAIXO do nome, não ao lado.
+ *
+ * O filete a ligar nome e preço é a convenção do papel, onde há uma coluna
+ * estreita e o olho precisa de guia. Num ecrã de telemóvel obriga o nome a
+ * partir-se a meio para dar lugar ao preço, e o filete fica um risco solto no
+ * meio do nada. Empilhados, cada sobremesa é um par que se lê de uma vez.
+ */
+.menu[data-format="story"] .menu__dish--priced {
+  display: block;
+  text-align: inherit;
+  font-size: calc(var(--s-dish) * var(--u));
+}
+.menu[data-format="story"] .menu__dish-leader {
+  display: none;
+}
+.menu[data-format="story"] .menu__dish-price {
+  display: block;
+  color: var(--m-accent);
+  margin-top: calc(var(--s-gap-tight) * var(--u));
 }
 
 .menu__empty {
@@ -275,94 +321,71 @@
   text-align: center;
   color: var(--m-muted);
   font-style: italic;
-  padding: 24px;
+  padding: calc(24px * var(--fit));
   font-family: var(--font-display);
+  margin: 0;
 }
 
 /* ============================================================
-   Tamanhos-base do STORY (canvas 1080x1920) — maiores que o print
-   para se manter legível mesmo sem template associado. Cada
-   template de story (PART B) afina ainda mais estes valores.
+   4. Preço — o número grande, e o que ele inclui logo por baixo
    ============================================================ */
-.menu[data-format="story"] .menu__header {
-  padding-top: calc(4px * var(--fit));
+.menu__price-box {
+  flex: 0 0 auto;
+  width: var(--m-measure);
+  margin: 0 auto;
+  padding-top: calc(var(--s-gap-price) * var(--u));
+  border-top: 1px solid var(--m-border);
 }
-.menu[data-format="story"] .menu__logo {
-  max-height: calc(120px * var(--fit));
-  margin-bottom: calc(14px * var(--fit));
+.menu__price-label {
+  font-family: var(--font-ui);
+  font-size: calc(var(--s-price-label) * var(--u));
+  font-weight: 700;
+  letter-spacing: calc(var(--s-label-track) * var(--u));
+  text-transform: uppercase;
+  color: var(--m-muted);
+  margin: 0;
+  text-indent: calc(var(--s-label-track) * var(--u) * var(--m-track-fix));
 }
-.menu[data-format="story"] .menu__restaurant {
-  font-size: calc(64px * var(--fit));
-  letter-spacing: -0.6px;
+/* Sem `font-variant-numeric: tabular-nums`. O html2canvas remede o texto com
+   as larguras normais do tipo e desenha-o com as posições que calculou: com
+   algarismos tabulares as duas contas divergem e, no preço grande, o símbolo
+   do euro saía por cima do último algarismo na imagem exportada. */
+.menu__price-value {
+  font-family: var(--font-display);
+  font-size: calc(var(--s-price) * var(--u));
+  font-weight: 600;
+  color: var(--m-accent);
+  margin: calc(var(--s-gap-tight) * var(--u)) 0 0;
+  line-height: 1;
 }
-.menu[data-format="story"] .menu__tagline {
-  font-size: calc(20px * var(--fit));
-  margin-top: calc(8px * var(--fit));
+.menu__includes {
+  font-family: var(--font-ui);
+  font-size: calc(var(--s-includes) * var(--u));
+  color: var(--m-muted);
+  margin: calc(var(--s-gap-tight) * var(--u) * 2) 0 0;
+  line-height: 1.4;
 }
-.menu[data-format="story"] .menu__rule {
-  margin: calc(16px * var(--fit)) 0 calc(14px * var(--fit));
+/* Sozinho, sem o preço por cima, herda a divisória e o respiro que o bloco do
+   preço lhe dava — senão ficava agarrado ao último prato. */
+.menu__includes--alone {
+  flex: 0 0 auto;
+  width: var(--m-measure);
+  margin: 0 auto;
+  padding-top: calc(var(--s-gap-price) * var(--u));
+  border-top: 1px solid var(--m-border);
 }
-.menu[data-format="story"] .menu__rule::before,
-.menu[data-format="story"] .menu__rule::after {
-  width: calc(76px * var(--fit));
-}
-.menu[data-format="story"] .menu__rule i {
-  width: calc(10px * var(--fit));
-  height: calc(10px * var(--fit));
-  margin: 0 calc(15px * var(--fit));
-}
-.menu[data-format="story"] .menu__eyebrow {
-  font-size: calc(20px * var(--fit));
-  letter-spacing: calc(6px * var(--fit));
-}
-.menu[data-format="story"] .menu__date {
-  font-size: calc(26px * var(--fit));
-  margin-top: calc(6px * var(--fit));
-}
-.menu[data-format="story"] .menu__includes {
-  margin: calc(19px * var(--fit)) auto calc(3px * var(--fit));
-  padding: calc(13px * var(--fit)) calc(24px * var(--fit));
-}
-.menu[data-format="story"] .menu__includes-label {
-  font-size: calc(14px * var(--fit));
-  letter-spacing: calc(3.5px * var(--fit));
-}
-.menu[data-format="story"] .menu__includes-value {
-  font-size: calc(30px * var(--fit));
-}
-.menu[data-format="story"] .menu__soup {
-  font-size: calc(34px * var(--fit));
-  margin-top: calc(9px * var(--fit));
-}
-.menu[data-format="story"] .menu__soup span {
-  font-size: calc(14px * var(--fit));
-}
-.menu[data-format="story"] .menu__dishes-block {
-  margin-top: calc(19px * var(--fit));
-}
-.menu[data-format="story"] .menu__dishes-title {
-  font-size: calc(24px * var(--fit));
-  letter-spacing: calc(4.5px * var(--fit));
-  margin-bottom: calc(6px * var(--fit));
-}
-.menu[data-format="story"] .menu__dish {
-  font-size: calc(50px * var(--fit));
-  padding: calc(5px * var(--fit)) 0;
-}
-.menu[data-format="story"] .menu__price-box {
-  margin: calc(19px * var(--fit)) auto calc(6px * var(--fit));
-  padding: calc(13px * var(--fit)) calc(38px * var(--fit));
-}
-.menu[data-format="story"] .menu__price-label {
-  font-size: calc(14px * var(--fit));
-  letter-spacing: calc(3.5px * var(--fit));
-}
-.menu[data-format="story"] .menu__price-value {
-  font-size: calc(72px * var(--fit));
-}
-.menu[data-format="story"] .menu__footer {
-  font-size: calc(30px * var(--fit));
-  margin-top: calc(14px * var(--fit));
+
+/* ============================================================
+   5. Frase final — presente, nunca a competir
+   ============================================================ */
+.menu__footer {
+  flex: 0 0 auto;
+  margin-top: calc(var(--s-gap-footer) * var(--u));
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: calc(var(--s-footer) * var(--u));
+  color: var(--m-muted);
+  line-height: 1.35;
 }
 
 /* ---------------- Impressão ---------------- */

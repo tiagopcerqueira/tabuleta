@@ -1,539 +1,495 @@
 /* ============================================================
    Tabuleta — templates do menu (camada estética)
 
-   Oito templates: quatro para imprimir (fundo branco, poupa tinteiro) e
-   quatro para stories (criativos, fundo pintado).
+   Oito templates: quatro para imprimir (papel branco, pouca tinta) e quatro
+   para stories (ecrã, fundo pintado).
 
-   Cada bloco define os seus tokens --m-* e ajusta tipografia, disposição
-   e decoração. As regras estruturais de menu.css ficam intactas — aqui só
-   se pinta e tipografa.
+   Cada bloco define os seus tokens --m-* e afina tipografia e decoração. As
+   regras estruturais de menu.css ficam intactas — aqui só se pinta.
+
+   O critério é sempre o mesmo: cada template tem UM gesto próprio — uma
+   moldura, uma faixa, um alinhamento, um medalhão — e nada mais. Um template
+   que muda a moldura E a cor E o alinhamento E os separadores deixa de ser um
+   estilo para passar a ser barulho, e o cliente que olha para a folha tem de
+   procurar o preço em vez de o ver.
 
    Para acrescentar um template: um bloco aqui, e uma entrada em
    src/core/templates.js. Mais nada precisa de saber que ele existe.
    ============================================================ */
 
-/* ---------- PRINT 1/4 — classico: tradicional elegante ---------- */
+/* ============================================================
+   Comum — alinhamento à esquerda
+   Três templates alinham tudo à esquerda. A estrutura centra por omissão,
+   por isso é preciso desfazer os centramentos nos mesmos sítios.
+   ============================================================ */
+.menu[data-template="moderno"],
+.menu[data-template="vibrante"],
+.menu[data-template="editorial"] {
+  text-align: left;
+  /* O recuo que corrige o centro ótico das maiúsculas espaçadas passa a ser
+     um defeito quando há uma margem comum: descolava os rótulos dela. */
+  --m-track-fix: 0;
+}
+.menu[data-template="moderno"] .menu__logo,
+.menu[data-template="vibrante"] .menu__logo,
+.menu[data-template="editorial"] .menu__logo,
+.menu[data-template="moderno"] .menu__title::before,
+.menu[data-template="vibrante"] .menu__title::before,
+.menu[data-template="editorial"] .menu__title::before,
+.menu[data-template="moderno"] .menu__dishes,
+.menu[data-template="vibrante"] .menu__dishes,
+.menu[data-template="editorial"] .menu__dishes,
+.menu[data-template="moderno"] .menu__price-box,
+.menu[data-template="vibrante"] .menu__price-box,
+.menu[data-template="editorial"] .menu__price-box {
+  margin-left: 0;
+  margin-right: auto;
+}
+.menu[data-template="moderno"] .menu__dishes,
+.menu[data-template="vibrante"] .menu__dishes,
+.menu[data-template="editorial"] .menu__dishes,
+.menu[data-template="moderno"] .menu__price-box,
+.menu[data-template="vibrante"] .menu__price-box,
+.menu[data-template="editorial"] .menu__price-box {
+  width: 100%;
+}
+
+/* Preço em linha: rótulo à esquerda, número à direita, "inclui" por baixo.
+   Serve os três templates alinhados à esquerda. */
+.menu[data-template="moderno"] .menu__price-box,
+.menu[data-template="vibrante"] .menu__price-box,
+.menu[data-template="editorial"] .menu__price-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: calc(20px * var(--fit));
+}
+.menu[data-template="moderno"] .menu__includes,
+.menu[data-template="vibrante"] .menu__includes,
+.menu[data-template="editorial"] .menu__includes {
+  flex: 1 0 100%;
+}
+
+/* ============================================================
+   PRINT 1/4 — clássico
+   Gesto: a moldura de filete duplo. Tudo o resto é tipografia serifada
+   centrada, que é como se compõe uma ementa desde sempre.
+   ============================================================ */
 .menu[data-template="classico"] {
-  --m-paper: #ffffff;
-  --m-paper-2: #ffffff;
   --m-ink: #1d3a4a;
   --m-muted: #7c8a91;
   --m-accent: #1c5b86;
   --m-brass: #a9781f;
-  --m-border: #c7d8e6;
+  --m-border: #cfdce6;
   --m-soft: #eef4f8;
 }
-/* Moldura dupla clássica — dois filetes sólidos (o html2canvas não rende
-   fielmente border-style:double, por isso usa-se ::before + ::after). */
+/* Dois filetes sólidos em vez de `border-style: double`, que o html2canvas
+   não rende. O interior fica a 12mm da margem para a moldura respirar. */
 .menu[data-template="classico"]::before {
   content: "";
   position: absolute;
   inset: calc(9mm * var(--fit));
-  border: 1.5px solid var(--m-brass);
+  border: 2px solid var(--m-brass);
   pointer-events: none;
-  z-index: 0;
 }
+/* Larguras inteiras: com filetes fracionários o html2canvas arredonda cada
+   lado por sua conta e a moldura sai com degraus. */
 .menu[data-template="classico"]::after {
   content: "";
   position: absolute;
-  inset: calc(9mm * var(--fit) + 4px);
+  inset: calc(9mm * var(--fit) + 5px);
   border: 1px solid var(--m-brass);
   pointer-events: none;
-  z-index: 0;
-}
-.menu[data-template="classico"] .menu__logo {
-  max-height: calc(48px * var(--fit));
-  margin: 0 auto calc(6px * var(--fit));
 }
 .menu[data-template="classico"] .menu__restaurant {
-  letter-spacing: 0.2px;
-}
-.menu[data-template="classico"] .menu__price-box {
-  align-self: center;
-  width: calc(104px * var(--fit));
-  height: calc(104px * var(--fit));
-  border-radius: 50%;
-  border-width: 2px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-.menu[data-template="classico"] .menu__price-label {
-  font-size: calc(8px * var(--fit));
-  letter-spacing: calc(1.5px * var(--fit));
-}
-.menu[data-template="classico"] .menu__price-value {
-  font-size: calc(23px * var(--fit));
-}
-
-/* ---------- PRINT 2/4 — moderno: editorial minimal, assimétrico ---------- */
-.menu[data-template="moderno"] {
-  --m-paper: #ffffff;
-  --m-paper-2: #ffffff;
-  --m-ink: #1a1a1a;
-  --m-muted: #8a8a8a;
-  --m-accent: #c0392b;
-  --m-brass: #c0392b;
-  --m-border: #e6e6e6;
-  --m-soft: #f7f0ef;
-}
-.menu[data-template="moderno"] .menu__header {
-  text-align: left;
-}
-.menu[data-template="moderno"] .menu__logo {
-  margin: 0 0 calc(10px * var(--fit));
-}
-.menu[data-template="moderno"] .menu__restaurant {
-  font-family: var(--font-sans);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: calc(-0.8px * var(--fit));
-}
-.menu[data-template="moderno"] .menu__tagline {
-  font-family: var(--font-sans);
-  font-style: normal;
   letter-spacing: 0.3px;
 }
-.menu[data-template="moderno"] .menu__rule {
-  justify-content: flex-start;
-  margin-left: 0;
-  margin-right: 0;
+.menu[data-template="classico"] .menu__title::before {
+  background: var(--m-brass);
 }
-.menu[data-template="moderno"] .menu__rule::before {
-  display: none;
+.menu[data-template="classico"] .menu__price-box {
+  border-top-color: var(--m-brass);
 }
-.menu[data-template="moderno"] .menu__rule::after {
-  width: calc(64px * var(--fit));
-  height: 3px;
-  background: var(--m-accent);
+.menu[data-template="classico"] .menu__price-value {
+  color: var(--m-brass);
 }
-.menu[data-template="moderno"] .menu__rule i {
-  display: none;
+
+/* ============================================================
+   PRINT 2/4 — moderno
+   Gesto: o alinhamento à esquerda. Sem moldura, sem ornamento; a ordem
+   vem da margem comum e do peso do tipo sem serifas.
+   ============================================================ */
+.menu[data-template="moderno"] {
+  --m-ink: #16181a;
+  --m-muted: #8b9095;
+  --m-accent: #b23a2b;
+  --m-brass: #b23a2b;
+  --m-border: #e3e5e7;
+  --m-soft: #f7f2f1;
+
+  --s-restaurant: 33;
+  --s-dish: 20;
+  --m-rule: 40;
 }
-.menu[data-template="moderno"] .menu__eyebrow,
-.menu[data-template="moderno"] .menu__includes,
-.menu[data-template="moderno"] .menu__soup,
-.menu[data-template="moderno"] .menu__dishes-title,
+.menu[data-template="moderno"] .menu__restaurant,
+.menu[data-template="moderno"] .menu__tagline,
+.menu[data-template="moderno"] .menu__soup-name,
 .menu[data-template="moderno"] .menu__dish,
+.menu[data-template="moderno"] .menu__price-value,
 .menu[data-template="moderno"] .menu__footer {
-  text-align: left;
   font-family: var(--font-sans);
 }
-.menu[data-template="moderno"] .menu__includes {
-  margin-left: 0;
-  margin-right: auto;
+.menu[data-template="moderno"] .menu__restaurant {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.4px;
+}
+.menu[data-template="moderno"] .menu__tagline {
+  font-style: normal;
+  letter-spacing: 0.2px;
+}
+.menu[data-template="moderno"] .menu__title::before {
+  height: 2.5px;
+  background: var(--m-accent);
 }
 .menu[data-template="moderno"] .menu__dish {
   font-weight: 600;
-  line-height: 1.7;
   letter-spacing: -0.1px;
+}
+.menu[data-template="moderno"] .menu__price-value {
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+.menu[data-template="moderno"] .menu__price-box {
+  border-top-width: 2.5px;
+  border-top-color: var(--m-ink);
 }
 .menu[data-template="moderno"] .menu__footer {
   font-style: normal;
 }
-.menu[data-template="moderno"] .menu__date {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin: 0;
-  text-align: right;
-  font-family: var(--font-sans);
-  font-weight: 600;
-}
-.menu[data-template="moderno"] .menu__price-box {
-  align-self: stretch;
-  width: 100%;
-  max-width: 100%;
-  margin: calc(16px * var(--fit)) 0 0;
-  border: none;
-  border-radius: 4px;
-  background: var(--m-accent);
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: calc(12px * var(--fit)) calc(20px * var(--fit));
-}
-.menu[data-template="moderno"] .menu__price-label {
-  color: rgba(255, 255, 255, 0.78);
-  text-align: left;
-}
-.menu[data-template="moderno"] .menu__price-value {
-  color: #fff;
-  text-align: right;
-}
 
-/* ---------- PRINT 3/4 — bistro: bistrô francês ---------- */
+/* ============================================================
+   PRINT 3/4 — bistrô
+   Gesto: o nome em condensado entre dois filetes, e os pratos separados
+   por linhas — a lousa de um bistrô, passada a papel.
+   ============================================================ */
 .menu[data-template="bistro"] {
-  --m-paper: #ffffff;
-  --m-paper-2: #ffffff;
   --m-ink: #2c2a26;
   --m-muted: #8a8275;
-  --m-accent: #2f6b43;
+  --m-accent: #2c6244;
   --m-brass: #9c6b3b;
-  --m-border: #d9cdb0;
-  --m-soft: #eef1e7;
-}
-.menu[data-template="bistro"] .menu__header {
-  background: var(--m-accent);
-  margin: -16mm -18mm calc(14px * var(--fit));
-  padding: calc(20px * var(--fit)) 18mm calc(14px * var(--fit));
-}
-.menu[data-template="bistro"] .menu__header .menu__restaurant,
-.menu[data-template="bistro"] .menu__header .menu__tagline {
-  color: #f7f3ea;
+  --m-border: #ded5c2;
+  --m-soft: #f0f2ea;
+
+  --s-restaurant: 31;
+  --s-gap-dish: 0;
 }
 .menu[data-template="bistro"] .menu__restaurant {
   font-family: var(--font-cond);
   text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: calc(2px * var(--fit));
+  font-weight: 500;
+  letter-spacing: calc(3px * var(--fit));
+  padding: calc(9px * var(--fit)) 0;
+  border-top: 2px solid var(--m-accent);
+  border-bottom: 2px solid var(--m-accent);
 }
 .menu[data-template="bistro"] .menu__eyebrow,
-.menu[data-template="bistro"] .menu__dishes-title,
-.menu[data-template="bistro"] .menu__includes-label,
+.menu[data-template="bistro"] .menu__label,
 .menu[data-template="bistro"] .menu__price-label {
   font-family: var(--font-cond);
-  letter-spacing: calc(3px * var(--fit));
+  font-weight: 400;
 }
-.menu[data-template="bistro"] .menu__rule::before,
-.menu[data-template="bistro"] .menu__rule::after {
-  height: 2px;
-  background: var(--m-brass);
+.menu[data-template="bistro"] .menu__title::before {
+  display: none;
 }
+.menu[data-template="bistro"] .menu__title {
+  margin-top: calc(var(--s-gap-title) * var(--u) * 1.4);
+}
+/* Os filetes entre pratos substituem o espaçamento — daí --s-gap-dish: 0. */
 .menu[data-template="bistro"] .menu__dish {
-  letter-spacing: 0.2px;
+  padding: calc(8px * var(--fit)) 0;
 }
-.menu[data-template="bistro"] .menu__dish:not(:first-child) {
+.menu[data-template="bistro"] .menu__dish + .menu__dish {
   border-top: 1px solid var(--m-border);
 }
+/* Nas sobremesas o filete de separação já leva o olho de linha em linha —
+   somar-lhe o filete que liga o nome ao preço dava duas linhas por
+   sobremesa e uma grelha em vez de uma ementa. */
+.menu[data-template="bistro"] .menu__dish-leader {
+  display: none;
+}
 .menu[data-template="bistro"] .menu__price-box {
-  align-self: flex-end;
-  border-radius: 4px 0 0 4px;
-  border: none;
-  border-right: 3px solid var(--m-brass);
+  border-top-color: var(--m-accent);
+}
+.menu[data-template="bistro"] .menu__price-value {
+  color: var(--m-accent);
 }
 
-/* ---------- PRINT 4/4 — solar: ementa formal ---------- */
+/* ============================================================
+   PRINT 4/4 — solar
+   Gesto: a moldura com respiro e as versaletes. A ementa de sala, formal
+   sem ser pesada.
+   ============================================================ */
 .menu[data-template="solar"] {
-  --m-paper: #ffffff;
-  --m-paper-2: #ffffff;
   --m-ink: #3a2f2a;
-  --m-muted: #8a7a6e;
+  --m-muted: #8f7f72;
   --m-accent: #7c2438;
   --m-brass: #a9781f;
-  --m-border: #d8c9a0;
-  --m-soft: #f7eee0;
+  --m-border: #ddcda6;
+  --m-soft: #f8f0e2;
+
+  --s-gap-dish: 12;
 }
+/* Filete duplo por dois pseudo-elementos. Já esteve feito com `box-shadow`
+   de expansão, mas o html2canvas desenhava a sombra por cima da própria
+   moldura em alguns lados e a imagem exportada saía com degraus nos cantos
+   de baixo. Dois filetes sólidos rendem igual no ecrã e no PNG. */
 .menu[data-template="solar"]::before {
   content: "";
   position: absolute;
-  inset: calc(9mm * var(--fit));
+  inset: calc(10mm * var(--fit));
   border: 2px solid var(--m-brass);
-  box-shadow:
-    0 0 0 calc(3px * var(--fit)) var(--m-paper),
-    0 0 0 calc(4px * var(--fit)) var(--m-brass);
   pointer-events: none;
-  z-index: 0;
 }
 .menu[data-template="solar"]::after {
-  content: "❦";
+  content: "";
   position: absolute;
-  top: calc(5mm * var(--fit));
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-display);
-  font-size: calc(15px * var(--fit));
-  color: var(--m-brass);
+  inset: calc(10mm * var(--fit) - 5px);
+  border: 1px solid var(--m-border);
   pointer-events: none;
-  z-index: 1;
 }
 .menu[data-template="solar"] .menu__restaurant {
   font-variant: small-caps;
-  letter-spacing: calc(1px * var(--fit));
-}
-.menu[data-template="solar"] .menu__eyebrow {
-  letter-spacing: calc(5px * var(--fit));
-}
-.menu[data-template="solar"] .menu__dishes-title,
-.menu[data-template="solar"] .menu__includes-label {
-  text-transform: none;
-  font-variant: small-caps;
-  font-family: var(--font-display);
+  font-weight: 500;
   letter-spacing: calc(1.5px * var(--fit));
 }
-.menu[data-template="solar"] .menu__dish {
-  letter-spacing: 0.3px;
-  line-height: 1.55;
+.menu[data-template="solar"] .menu__eyebrow,
+.menu[data-template="solar"] .menu__label,
+.menu[data-template="solar"] .menu__price-label {
+  font-family: var(--font-display);
+  font-variant: small-caps;
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: calc(1.4px * var(--fit));
+  text-indent: calc(1.4px * var(--fit));
 }
-.menu[data-template="solar"] .menu__dish:not(:last-child)::after {
+.menu[data-template="solar"] .menu__title::before {
+  background: var(--m-brass);
+}
+/* Ponto de latão entre pratos: a marca de separação de uma ementa formal,
+   discreta o suficiente para não virar ornamento. */
+.menu[data-template="solar"] .menu__dish + .menu__dish::before {
   content: "";
   display: block;
-  width: calc(4px * var(--fit));
-  height: calc(4px * var(--fit));
+  width: calc(3px * var(--fit));
+  height: calc(3px * var(--fit));
   background: var(--m-brass);
   border-radius: 50%;
-  margin: calc(7px * var(--fit)) auto 0;
+  margin: 0 auto calc(11px * var(--fit));
 }
 .menu[data-template="solar"] .menu__price-box {
-  border: 1.5px solid var(--m-accent);
-  background: transparent;
+  border-top-color: var(--m-brass);
 }
 .menu[data-template="solar"] .menu__price-value {
   color: var(--m-accent);
 }
 
-/* ---------- STORY 1/4 — ardosia: chalkboard escuro e dourado ---------- */
+/* ============================================================
+   STORY 1/4 — ardósia
+   Gesto: a moldura fina sobre fundo escuro. Dourado apenas no que decide
+   — o título e o preço.
+   ============================================================ */
 .menu[data-template="ardosia"] {
-  --m-paper: #232a2d;
-  --m-paper-2: #1a1f22;
-  --m-ink: #ece4d6;
-  --m-muted: #9aa4a6;
-  --m-accent: #d7a44a;
-  --m-brass: #d7a44a;
-  --m-border: rgba(215, 164, 74, 0.5);
-  --m-soft: rgba(236, 228, 214, 0.07);
+  --m-paper: #22282b;
+  --m-ink: #f0e9dd;
+  --m-muted: #9ca5a7;
+  --m-accent: #d8a850;
+  --m-brass: #d8a850;
+  --m-border: rgba(216, 168, 80, 0.42);
+  --m-soft: rgba(240, 233, 221, 0.06);
 }
 .menu[data-template="ardosia"]::before {
   content: "";
   position: absolute;
-  inset: calc(28px * var(--fit));
-  border: 1.5px solid var(--m-accent);
-  border-radius: 20px;
+  inset: calc(30px * var(--fit));
+  border: 1.5px solid rgba(216, 168, 80, 0.55);
+  border-radius: calc(16px * var(--fit));
   pointer-events: none;
-  z-index: 0;
 }
-.menu[data-template="ardosia"] .menu__eyebrow {
-  letter-spacing: calc(7px * var(--fit));
+.menu[data-template="ardosia"] .menu__restaurant {
+  text-transform: uppercase;
+  font-size: calc(40 * var(--u));
+  letter-spacing: calc(4px * var(--fit));
+  font-weight: 500;
 }
-.menu[data-template="ardosia"] .menu__date {
-  color: var(--m-ink);
-  font-weight: 600;
-  letter-spacing: 0.5px;
+.menu[data-template="ardosia"] .menu__title::before {
+  background: var(--m-accent);
 }
-.menu[data-template="ardosia"] .menu__includes {
-  border: 1px solid var(--m-border);
+.menu[data-template="ardosia"] .menu__price-value {
+  color: var(--m-accent);
 }
-.menu[data-template="ardosia"] .menu__dish {
-  letter-spacing: 0.2px;
-}
-.menu[data-template="ardosia"] .menu__price-box {
-  position: relative;
-  z-index: 0;
-  width: calc(250px * var(--fit));
-  height: calc(250px * var(--fit));
-  border-radius: 50%;
-  border: 2px solid var(--m-accent);
-  background: rgba(215, 164, 74, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+.menu[data-template="ardosia"] .menu__footer {
+  color: rgba(240, 233, 221, 0.55);
 }
 
-/* ---------- STORY 2/4 — vibrante: impacto para redes ---------- */
+/* ============================================================
+   STORY 2/4 — vibrante
+   Gesto: a cor cheia e o tipo pesado alinhado à esquerda. Para parar o
+   polegar; por isso o preço vem num bloco sólido.
+   ============================================================ */
 .menu[data-template="vibrante"] {
-  --m-paper: #d1502e;
-  --m-paper-2: #b83b1e;
-  --m-ink: #fff6ec;
-  --m-muted: rgba(255, 246, 236, 0.78);
-  --m-accent: #ffe9d6;
-  --m-brass: #ffe9d6;
-  --m-border: rgba(255, 246, 236, 0.4);
-  --m-soft: rgba(255, 246, 236, 0.14);
+  --m-paper: #c8492a;
+  --m-ink: #fff4ea;
+  --m-muted: rgba(255, 244, 234, 0.72);
+  --m-accent: #ffe3cd;
+  --m-brass: #ffe3cd;
+  --m-border: rgba(255, 244, 234, 0.32);
+  --m-soft: rgba(255, 244, 234, 0.12);
+
+  --s-dish: 60;
+}
+.menu[data-template="vibrante"] .menu__restaurant,
+.menu[data-template="vibrante"] .menu__soup-name,
+.menu[data-template="vibrante"] .menu__dish,
+.menu[data-template="vibrante"] .menu__price-value {
+  font-family: var(--font-sans);
 }
 .menu[data-template="vibrante"] .menu__restaurant {
-  font-family: var(--font-cond);
-  font-weight: 700;
   text-transform: uppercase;
-}
-.menu[data-template="vibrante"] .menu__eyebrow,
-.menu[data-template="vibrante"] .menu__dishes-title,
-.menu[data-template="vibrante"] .menu__includes-label,
-.menu[data-template="vibrante"] .menu__price-label {
-  font-family: var(--font-sans);
   font-weight: 700;
-}
-.menu[data-template="vibrante"] .menu__includes {
-  border: 1px solid rgba(255, 246, 236, 0.3);
-}
-.menu[data-template="vibrante"] .menu__date {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin: 0;
-  background: #fff6ec;
-  color: #b83b1e;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  border-radius: 999px;
-  padding: calc(10px * var(--fit)) calc(22px * var(--fit));
+  letter-spacing: calc(1px * var(--fit));
 }
 .menu[data-template="vibrante"] .menu__dish {
-  font-family: var(--font-sans);
   font-weight: 700;
-  text-align: left;
+  letter-spacing: -0.5px;
+  line-height: 1.12;
+}
+.menu[data-template="vibrante"] .menu__title::before {
+  height: calc(5px * var(--fit));
+  width: calc(70px * var(--fit));
+  background: var(--m-accent);
 }
 .menu[data-template="vibrante"] .menu__price-box {
-  width: 100%;
   border: none;
-  border-radius: 22px;
-  background: var(--m-paper-2);
+  background: #a63a20;
+  border-radius: calc(24px * var(--fit));
+  padding: calc(26px * var(--fit)) calc(34px * var(--fit));
 }
 .menu[data-template="vibrante"] .menu__price-value {
-  font-family: var(--font-cond);
+  color: var(--m-ink);
   font-weight: 700;
-  font-size: calc(96px * var(--fit));
+  letter-spacing: -2px;
+}
+.menu[data-template="vibrante"] .menu__footer {
+  font-style: normal;
+  font-family: var(--font-sans);
 }
 
-/* ---------- STORY 3/4 — fresco: claro, redondo, apetitoso ---------- */
+/* ============================================================
+   STORY 3/4 — fresco
+   Gesto: o medalhão redondo do preço sobre papel quente. Claro e
+   apetitoso, sem gritar.
+   ============================================================ */
 .menu[data-template="fresco"] {
-  --m-paper: #ffd9a8;
-  --m-paper-2: #fff3e2;
+  --m-paper: #fdf1e0;
   --m-ink: #5a3d2b;
-  --m-muted: #93715a;
-  --m-accent: #e07a3f;
-  --m-brass: #e07a3f;
-  --m-border: rgba(224, 122, 63, 0.32);
-  --m-soft: rgba(255, 255, 255, 0.6);
+  --m-muted: #9c7c62;
+  --m-accent: #d9713c;
+  --m-brass: #d9713c;
+  --m-border: rgba(217, 113, 60, 0.3);
+  --m-soft: #ffffff;
+
+  /* mais contido do que nos outros stories: o número vai dentro do medalhão */
+  --s-price: 82;
 }
-.menu[data-template="fresco"] .menu__eyebrow,
-.menu[data-template="fresco"] .menu__dishes-title,
-.menu[data-template="fresco"] .menu__includes-label,
-.menu[data-template="fresco"] .menu__includes-value,
-.menu[data-template="fresco"] .menu__price-label,
-.menu[data-template="fresco"] .menu__date,
-.menu[data-template="fresco"] .menu__footer,
-.menu[data-template="fresco"] .menu__dish {
+.menu[data-template="fresco"] .menu__restaurant,
+.menu[data-template="fresco"] .menu__dish,
+.menu[data-template="fresco"] .menu__soup-name,
+.menu[data-template="fresco"] .menu__price-value {
   font-family: var(--font-sans);
+}
+.menu[data-template="fresco"] .menu__restaurant {
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 .menu[data-template="fresco"] .menu__dish {
   font-weight: 600;
 }
-.menu[data-template="fresco"] .menu__includes {
-  border-radius: 999px;
-}
-.menu[data-template="fresco"] .menu__soup {
-  border-radius: 24px;
-  background: var(--m-soft);
-  padding: calc(8px * var(--fit)) calc(18px * var(--fit));
-}
-.menu[data-template="fresco"] .menu__price-box {
-  position: relative;
-  z-index: 0;
-  width: calc(230px * var(--fit));
-  height: calc(230px * var(--fit));
-  border-radius: 50%;
-  border: none;
+.menu[data-template="fresco"] .menu__title::before {
   background: var(--m-accent);
+}
+/* No story o bloco do preço só tem rótulo e número — cabe num medalhão.
+   O diâmetro deriva do tamanho do número (e não de um valor fixo), senão
+   basta o encaixe subir para o preço sair porta fora do círculo. */
+.menu[data-template="fresco"] .menu__price-box {
+  width: calc(var(--s-price) * var(--u) * 3.5);
+  height: calc(var(--s-price) * var(--u) * 3.5);
+  border: none;
+  border-radius: 50%;
+  background: var(--m-accent);
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0;
 }
-.menu[data-template="fresco"] .menu__price-box::before {
-  content: "";
-  position: absolute;
-  inset: calc(-22px * var(--fit));
-  border-radius: 50%;
-  background: rgba(224, 122, 63, 0.16);
-  z-index: -1;
-}
-.menu[data-template="fresco"] .menu__price-label,
 .menu[data-template="fresco"] .menu__price-value {
-  color: #fff3e2;
+  white-space: nowrap;
+}
+.menu[data-template="fresco"] .menu__price-label {
+  color: rgba(255, 255, 255, 0.78);
+}
+.menu[data-template="fresco"] .menu__price-value {
+  color: #fff;
 }
 
-/* ---------- STORY 4/4 — editorial: revista upscale, split ---------- */
+/* ============================================================
+   STORY 4/4 — editorial
+   Gesto: a faixa de cor no topo, como a capa de uma revista. Serifa,
+   alinhamento à esquerda, muito ar.
+   ============================================================ */
 .menu[data-template="editorial"] {
-  --m-paper: #f6f2ea;
-  --m-paper-2: #f6f2ea;
+  --m-paper: #f7f3ec;
   --m-ink: #2b241c;
-  --m-muted: #8a7a68;
+  --m-muted: #8b7c69;
   --m-accent: #14425f;
   --m-brass: #14425f;
-  --m-border: rgba(20, 66, 95, 0.28);
-  --m-soft: rgba(20, 66, 95, 0.06);
+  --m-border: rgba(20, 66, 95, 0.24);
+  --m-soft: rgba(20, 66, 95, 0.05);
+
+  --s-restaurant: 50; /* é a manchete da capa, não uma assinatura */
 }
-.menu[data-template="editorial"]::before {
-  content: "";
-  position: absolute;
-  inset: calc(20px * var(--fit));
-  border: 1px solid var(--m-accent);
-  pointer-events: none;
-  z-index: 2;
-}
-.menu[data-template="editorial"] .menu__header,
-.menu[data-template="editorial"] .menu__rule,
-.menu[data-template="editorial"] .menu__eyebrow {
-  background: var(--m-accent);
-}
+/* A faixa sai fora do padding para tocar as margens da folha. */
 .menu[data-template="editorial"] .menu__header {
-  margin: -64px -64px 0;
-  padding: calc(64px * var(--fit)) 64px calc(20px * var(--fit));
+  background: var(--m-accent);
+  margin: -88px -76px 0;
+  padding: calc(76px * var(--fit)) 76px calc(52px * var(--fit));
 }
-.menu[data-template="editorial"] .menu__header .menu__restaurant,
+.menu[data-template="editorial"] .menu__restaurant,
 .menu[data-template="editorial"] .menu__tagline {
-  color: #f6f2ea;
+  color: #f7f3ec;
 }
-.menu[data-template="editorial"] .menu__rule {
-  margin: 0 -64px;
-  padding: calc(3px * var(--fit)) 0 0;
+.menu[data-template="editorial"] .menu__restaurant {
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
-.menu[data-template="editorial"] .menu__rule::before,
-.menu[data-template="editorial"] .menu__rule::after,
-.menu[data-template="editorial"] .menu__rule i {
+.menu[data-template="editorial"] .menu__title {
+  margin-top: calc(var(--s-gap-title) * var(--u) * 2);
+}
+.menu[data-template="editorial"] .menu__title::before {
   display: none;
 }
-.menu[data-template="editorial"] .menu__eyebrow {
-  color: #f6f2ea;
-  margin: 0 -64px;
-  padding: 0 64px calc(24px * var(--fit));
-  letter-spacing: calc(7px * var(--fit));
-}
-.menu[data-template="editorial"] .menu__date {
-  text-align: center;
-  color: var(--m-muted);
-  border-top: 1px solid var(--m-border);
-  border-bottom: 1px solid var(--m-border);
-  padding: calc(10px * var(--fit)) 0;
-  margin: 0;
-  font-family: var(--font-sans);
-  letter-spacing: 1px;
-}
-.menu[data-template="editorial"] .menu__includes,
-.menu[data-template="editorial"] .menu__dishes-title,
-.menu[data-template="editorial"] .menu__dish,
-.menu[data-template="editorial"] .menu__footer {
-  text-align: left;
-}
-.menu[data-template="editorial"] .menu__includes {
-  margin-left: 0;
-  margin-right: auto;
-}
-.menu[data-template="editorial"] .menu__dishes-title,
-.menu[data-template="editorial"] .menu__includes-label,
+.menu[data-template="editorial"] .menu__eyebrow,
+.menu[data-template="editorial"] .menu__label,
 .menu[data-template="editorial"] .menu__price-label,
 .menu[data-template="editorial"] .menu__footer {
   font-family: var(--font-sans);
-  letter-spacing: calc(3px * var(--fit));
 }
 .menu[data-template="editorial"] .menu__price-box {
-  align-self: flex-start;
-  margin-left: 0;
-  width: 100%;
-  background: none;
-  border: none;
-  border-top: 1px solid var(--m-border);
-  border-radius: 0;
-  padding: calc(16px * var(--fit)) 0 0;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  border-top-width: 2px;
+  border-top-color: var(--m-accent);
 }
-.menu[data-template="editorial"] .menu__price-value {
-  font-size: calc(46px * var(--fit));
+.menu[data-template="editorial"] .menu__footer {
+  font-style: normal;
 }

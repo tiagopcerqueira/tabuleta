@@ -46,7 +46,7 @@ test("o menu de sobremesas mostra cada sobremesa com o seu preço", () => {
   assert.match(html, /Arroz doce/);
   assert.match(html, /3,50 €/);
   assert.match(html, /Mousse/);
-  assert.match(html, /Sobremesas do dia/);
+  assert.match(html, /Sobremesas/);
 });
 
 test("o modo sobremesas não mostra sopa, pratos nem o bloco do menu completo", () => {
@@ -99,6 +99,14 @@ test("sem 'o menu inclui' usa o texto por omissão", () => {
   assert.match(renderMenuHtml(model({ includes: "" })), /Prato à escolha/);
 });
 
+/* O que o menu inclui vive ao lado do preço porque é o preço que levanta a
+   pergunta — mas não depende dele para existir. */
+test("o que o menu inclui aparece mesmo sem preço preenchido", () => {
+  const html = renderMenuHtml(model({ price: "" }));
+  assert.match(html, /Sopa · Pão · Bebida/);
+  assert.doesNotMatch(html, /menu__price-box/);
+});
+
 /* ============================================================
    O nome de um prato é texto escrito por uma pessoa e vai direto
    para innerHTML. Tudo o que venha do utilizador tem de sair
@@ -132,6 +140,33 @@ test("texto hostil nas sobremesas sai escapado, no nome e no preço", () => {
 
   assert.doesNotMatch(html, /<script>/);
   assert.doesNotMatch(html, /<b>x<\/b>/);
+});
+
+/* ============================================================
+   O story mostra menos do que a folha: quem passa o polegar não
+   lê uma ementa inteira. O que fica é o essencial.
+   ============================================================ */
+test("no story caem a data, o subtítulo e o que o menu inclui", () => {
+  const html = renderMenuHtml(model({ format: "story", tagline: "Cozinha caseira" }));
+
+  assert.doesNotMatch(html, /menu__date/);
+  assert.doesNotMatch(html, /Cozinha caseira/);
+  assert.doesNotMatch(html, /Sopa · Pão · Bebida/);
+});
+
+test("no story ficam o título, a sopa, os pratos e o preço", () => {
+  const html = renderMenuHtml(model({ format: "story" }));
+
+  assert.match(html, /Prato do Dia/);
+  assert.match(html, /Caldo verde/);
+  assert.match(html, /Bacalhau à Brás/);
+  assert.match(html, /9,50 €/);
+});
+
+test("sem nota de rodapé, o story fica com a frase da casa em vez de ficar mudo", () => {
+  const html = renderMenuHtml(model({ format: "story", footer: "", tagline: "Cozinha caseira" }));
+  assert.match(html, /menu__footer/);
+  assert.match(html, /Cozinha caseira/);
 });
 
 test("countVisibleItems conta só o que aparece no modo ativo", () => {
