@@ -7,19 +7,19 @@
    utilizador — um sintoma difícil de diagnosticar à distância.
    ============================================================ */
 
-const VERSION = "11.1.0"; /* gerado */
+const VERSION = "11.1.1"; /* gerado */
 const CACHE = `tabuleta-v${VERSION}`;
 
 const ASSETS = [
   "./",
   "index.html",
   "manifest.json",
-  "assets/html2canvas.min.js?v=11.1.0",
-  "styles/app.css?v=11.1.0",
-  "styles/base.css?v=11.1.0",
-  "styles/menu.css?v=11.1.0",
-  "styles/templates.css?v=11.1.0",
-  "src/main.js?v=11.1.0",
+  "assets/html2canvas.min.js?v=11.1.1",
+  "styles/app.css?v=11.1.1",
+  "styles/base.css?v=11.1.1",
+  "styles/menu.css?v=11.1.1",
+  "styles/templates.css?v=11.1.1",
+  "src/main.js?v=11.1.1",
   "src/app/dom.js",
   "src/app/editor-view.js",
   "src/app/exporter.js",

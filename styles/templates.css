@@ -41,7 +41,10 @@
 .menu[data-template="editorial"] .menu__dishes,
 .menu[data-template="moderno"] .menu__price-box,
 .menu[data-template="vibrante"] .menu__price-box,
-.menu[data-template="editorial"] .menu__price-box {
+.menu[data-template="editorial"] .menu__price-box,
+.menu[data-template="moderno"] .menu__includes--alone,
+.menu[data-template="vibrante"] .menu__includes--alone,
+.menu[data-template="editorial"] .menu__includes--alone {
   margin-left: 0;
   margin-right: auto;
 }
@@ -50,7 +53,10 @@
 .menu[data-template="editorial"] .menu__dishes,
 .menu[data-template="moderno"] .menu__price-box,
 .menu[data-template="vibrante"] .menu__price-box,
-.menu[data-template="editorial"] .menu__price-box {
+.menu[data-template="editorial"] .menu__price-box,
+.menu[data-template="moderno"] .menu__includes--alone,
+.menu[data-template="vibrante"] .menu__includes--alone,
+.menu[data-template="editorial"] .menu__includes--alone {
   width: 100%;
 }
 
@@ -65,9 +71,19 @@
   justify-content: space-between;
   column-gap: calc(20px * var(--fit));
 }
-.menu[data-template="moderno"] .menu__includes,
-.menu[data-template="vibrante"] .menu__includes,
-.menu[data-template="editorial"] .menu__includes {
+/**
+ * O seletor TEM de exigir o bloco do preço.
+ *
+ * `flex: 1 0 100%` quer dizer "ocupa a linha toda" — mas só dentro do bloco
+ * do preço, que é uma linha. Sem preço preenchido, o "menu inclui" passa a
+ * ser filho direto de `.menu`, que é uma coluna: aí a mesma declaração passa
+ * a querer dizer "ocupa 100% da ALTURA da folha, e cresce". A folha
+ * transbordava, o encaixe descia ao mínimo, e os três templates alinhados à
+ * esquerda apareciam com o texto minúsculo encolhido no topo.
+ */
+.menu[data-template="moderno"] .menu__price-box .menu__includes,
+.menu[data-template="vibrante"] .menu__price-box .menu__includes,
+.menu[data-template="editorial"] .menu__price-box .menu__includes {
   flex: 1 0 100%;
 }
 
