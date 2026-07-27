@@ -59,6 +59,7 @@
 
   /* ---- ritmo vertical: o que está junto pertence junto ---- */
   --s-gap-title: 15; /* marca → título */
+  --s-gap-soup: 16; /* título → sopa: pertencem ao mesmo grupo */
   --s-gap-block: 32; /* entre blocos do corpo */
   --s-gap-dish: 13; /* entre pratos */
   --s-gap-tight: 5; /* rótulo → o que ele nomeia */
@@ -104,6 +105,7 @@
   --s-footer: 24;
 
   --s-gap-title: 24;
+  --s-gap-soup: 38;
   --s-gap-block: 66;
   --s-gap-dish: 26;
   --s-gap-tight: 12;
@@ -210,9 +212,7 @@
   flex: 1 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: calc(var(--s-gap-block) * var(--u));
-  padding: calc(var(--s-gap-block) * var(--u)) 0;
+  padding: calc(var(--s-gap-soup) * var(--u)) 0 calc(var(--s-gap-block) * var(--u));
 }
 
 .menu__label {
@@ -239,9 +239,19 @@
   margin: 0;
 }
 
+/**
+ * Os pratos são o que se vem ver: ficam com o espaço livre todo e centram-se
+ * nele. A sopa não — essa pertence ao cabeçalho, é o que se serve antes.
+ * Quando era o corpo inteiro a centrar-se, a sopa descolava do título e
+ * ficava a pairar a meio da folha, sem pertencer a nada.
+ */
 .menu__dishes-block {
-  flex: 0 0 auto;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin: 0;
+  padding-top: calc(var(--s-gap-block) * var(--u));
 }
 .menu__dishes {
   display: flex;
@@ -350,6 +360,10 @@
    as larguras normais do tipo e desenha-o com as posições que calculou: com
    algarismos tabulares as duas contas divergem e, no preço grande, o símbolo
    do euro saía por cima do último algarismo na imagem exportada. */
+/* O € da Fraunces tem os traços a ultrapassar o C dos dois lados — é o
+   desenho da fonte, não um defeito. Ao tamanho a que o preço é composto,
+   porém, o traço da esquerda chega perto do último algarismo e lê-se como
+   sobreposição. Um pouco de espaço entre o número e o símbolo chega. */
 .menu__price-value {
   font-family: var(--font-display);
   font-size: calc(var(--s-price) * var(--u));
@@ -357,6 +371,7 @@
   color: var(--m-accent);
   margin: calc(var(--s-gap-tight) * var(--u)) 0 0;
   line-height: 1;
+  word-spacing: 0.08em;
 }
 .menu__includes {
   font-family: var(--font-ui);

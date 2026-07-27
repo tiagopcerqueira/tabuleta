@@ -45,6 +45,13 @@ precisa de perceber num relance passa a estar onde o olho vai primeiro.
   poucos pratos: a folha era lida a um metro de distância com texto de livro.
 - Cada template passa a ter **um gesto próprio** — uma moldura, uma faixa, um
   alinhamento, um medalhão — em vez de vários ao mesmo tempo.
+- **A sopa fica junto ao cabeçalho e só os pratos se centram** no espaço que
+  sobra. Quando era o corpo inteiro a centrar-se, a sopa descolava do título e
+  ficava a pairar a meio da folha, sem pertencer a grupo nenhum.
+- Espaço entre o número e o símbolo do euro: o € da Fraunces tem os traços a
+  ultrapassar o C dos dois lados — é o desenho da fonte, mas ao tamanho do
+  preço o traço da esquerda chegava perto do último algarismo e lia-se como
+  sobreposição.
 
 ---
 
