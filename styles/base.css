@@ -4,9 +4,27 @@
    Tipos de letra, variáveis de cor e reset. Carregado primeiro: tudo
    o resto assume que estas variáveis existem.
 
-   Identidade "Azulejo": a app é uma ferramenta limpa e moderna (com modo
-   claro e escuro); o menu é uma peça de porcelana com moldura e medalhão
-   em latão — essa parte vive em menu.css e templates.css.
+   ------------------------------------------------------------
+   A identidade: a oficina do letrista.
+
+   Uma tabuleta é a placa que se pendura à porta — a da tasca, a do
+   barbeiro, a da mercearia. Esta app não é a tabuleta: é a bancada onde
+   ela se pinta. E uma bancada não se pinta a si própria.
+
+   Daí a regra que governa tudo o que está abaixo: a interface é papel de
+   estirador — quente, mate, sem cor —, e a única coisa com cor no ecrã é
+   a peça que se está a compor. Antes a app era azul, e esse azul discutia
+   com o azul do template Clássico, com o vermelho do Moderno e com o
+   laranja do Fresco: quem escolhia um template estava a escolhê-lo contra
+   um fundo que já tinha opinião.
+
+   Por isso a ação principal é tinta, não cor. O latão aparece uma vez, no
+   foco do teclado, e é o único metal da oficina.
+   ------------------------------------------------------------
+
+   ATENÇÃO: `--font-display`, `--font-ui`, `--font-sans`, `--font-cond` e
+   `--shadow` são consumidos por menu.css e templates.css. Mexer-lhes é
+   mexer nos menus, não na app.
    ============================================================ */
 
 @font-face {
@@ -38,24 +56,14 @@
   src: url("../assets/fonts/oswald.woff2") format("woff2");
 }
 
-/* ---------------- Tokens da app (claro) ---------------- */
+/* ---------------- Tipos ---------------- */
 :root {
-  --bg: #e7edf1;
-  --bg-2: #dde6ec;
-  --panel: #ffffff;
-  --panel-2: #f1f5f8;
-  --ink: #17313d;
-  --muted: #647581;
-  --line: #d9e2e8;
-  --primary: #1c5b86;
-  --primary-deep: #14425f;
-  --primary-soft: #e7f0f6;
-  --brass: #a9781f;
-  --danger: #b23b3b;
-  --shadow-sm: 0 1px 2px rgba(20, 50, 70, 0.06);
-  --shadow: 0 12px 34px rgba(18, 46, 66, 0.12);
-  --radius: 16px;
-  --radius-sm: 10px;
+  /* Da app. Só app.css lhe toca. */
+  --font-app:
+    "Archivo", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+
+  /* Dos menus. Consumidos por menu.css e templates.css — não mexer. */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-ui:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
@@ -66,60 +74,134 @@
   --font-cond: "Oswald", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ---------------- Paleta (claro) ---------------- */
+:root,
+:root[data-theme="light"] {
+  --bg: #efece4;
+  --panel: #fbfaf7;
+  --panel-2: #f3f0e8;
+  --ink: #211f1b;
+  --muted: #7b7367;
+  --line: #e1dbcd;
+  --line-strong: #ccc4b2;
+
+  /* A ação principal é tinta. Nenhuma cor da app compete com a peça. */
+  --accent: #211f1b;
+  --accent-contrast: #fbfaf7;
+  --accent-soft: #e7e2d6;
+
+  --brass: #8f6c1c;
+  --danger: #a33a32;
+
+  /**
+   * Misturas com transparência, escritas por extenso.
+   *
+   * Estiveram como `color-mix()`, que só existe a partir do Chrome 111. Esta
+   * app é offline-first e vive em tablets baratos de cozinha, onde a WebView
+   * pode ter anos: nesses, cada `color-mix()` cai para o valor inicial e o
+   * resultado não é uma cor um pouco diferente — é uma borda preta onde devia
+   * estar um filete, ou um véu opaco por cima da barra. Por extenso não há
+   * nada que possa não ser suportado.
+   */
+  --bg-veil: rgba(239, 236, 228, 0.86);
+  --placeholder: #7b7367;
+  --focus-ring: rgba(143, 108, 28, 0.22);
+  --icon: #5c574e;
+  --danger-soft: rgba(163, 58, 50, 0.12);
+  --swatch-line: rgba(33, 31, 27, 0.15);
+  --brass-line: rgba(143, 108, 28, 0.35);
+  --scrim: rgba(33, 31, 27, 0.55);
+  --on-ink-line: rgba(251, 250, 247, 0.45);
+  --on-ink-soft: rgba(251, 250, 247, 0.16);
+
+  /* A folha levanta do estirador. Sombra quente, não azul. */
+  --shadow: 0 14px 36px rgba(60, 48, 28, 0.16);
+  --shadow-sm: 0 1px 2px rgba(60, 48, 28, 0.07);
+
+  --radius: 14px;
+  --radius-sm: 10px;
+}
+
+/* ---------------- Paleta (escuro) ---------------- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f151a;
-    --bg-2: #0b1015;
-    --panel: #17212a;
-    --panel-2: #1e2a34;
-    --ink: #e8eef3;
-    --muted: #91a3af;
-    --line: #2a3843;
-    --primary: #4ea0d6;
-    --primary-deep: #6fb6e4;
-    --primary-soft: #172733;
-    --brass: #d3a552;
-    --danger: #e07a7a;
+    --bg: #141311;
+    --panel: #1c1a17;
+    --panel-2: #232019;
+    --ink: #efeadf;
+    --muted: #968e82;
+    --line: #322e27;
+    --line-strong: #48423a;
+
+    --accent: #efeadf;
+    --accent-contrast: #1c1a17;
+    --accent-soft: #2a2620;
+
+    --brass: #d5ac5d;
+    --danger: #e08a80;
+
+    --bg-veil: rgba(20, 19, 17, 0.86);
+    --placeholder: #968e82;
+    --focus-ring: rgba(213, 172, 93, 0.26);
+    --icon: #a49b8e;
+    --danger-soft: rgba(224, 138, 128, 0.14);
+    --swatch-line: rgba(239, 234, 223, 0.2);
+    --brass-line: rgba(213, 172, 93, 0.35);
+    --scrim: rgba(8, 7, 6, 0.62);
+    --on-ink-line: rgba(28, 26, 23, 0.45);
+    --on-ink-soft: rgba(28, 26, 23, 0.16);
+
+    --shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
   }
 }
 /* Override explícito do utilizador vence sempre o media query */
-:root[data-theme="light"] {
-  --bg: #e7edf1;
-  --bg-2: #dde6ec;
-  --panel: #ffffff;
-  --panel-2: #f1f5f8;
-  --ink: #17313d;
-  --muted: #647581;
-  --line: #d9e2e8;
-  --primary: #1c5b86;
-  --primary-deep: #14425f;
-  --primary-soft: #e7f0f6;
-  --brass: #a9781f;
-  --danger: #b23b3b;
-  --shadow-sm: 0 1px 2px rgba(20, 50, 70, 0.06);
-  --shadow: 0 12px 34px rgba(18, 46, 66, 0.12);
-}
 :root[data-theme="dark"] {
-  --bg: #0f151a;
-  --bg-2: #0b1015;
-  --panel: #17212a;
-  --panel-2: #1e2a34;
-  --ink: #e8eef3;
-  --muted: #91a3af;
-  --line: #2a3843;
-  --primary: #4ea0d6;
-  --primary-deep: #6fb6e4;
-  --primary-soft: #172733;
-  --brass: #d3a552;
-  --danger: #e07a7a;
+  --bg: #141311;
+  --panel: #1c1a17;
+  --panel-2: #232019;
+  --ink: #efeadf;
+  --muted: #968e82;
+  --line: #322e27;
+  --line-strong: #48423a;
+
+  --accent: #efeadf;
+  --accent-contrast: #1c1a17;
+  --accent-soft: #2a2620;
+
+  --brass: #d5ac5d;
+  --danger: #e08a80;
+
+  --bg-veil: rgba(20, 19, 17, 0.86);
+  --placeholder: #968e82;
+  --focus-ring: rgba(213, 172, 93, 0.26);
+  --icon: #a49b8e;
+  --danger-soft: rgba(224, 138, 128, 0.14);
+  --swatch-line: rgba(239, 234, 223, 0.2);
+  --brass-line: rgba(213, 172, 93, 0.35);
+  --scrim: rgba(8, 7, 6, 0.62);
+  --on-ink-line: rgba(28, 26, 23, 0.45);
+  --on-ink-soft: rgba(28, 26, 23, 0.16);
+
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/**
+ * O atributo `hidden` tem de vencer o `display` que a app atribuir a seguir.
+ *
+ * O navegador esconde `[hidden]` com uma regra da sua própria folha, e uma
+ * folha de autor ganha-lhe sempre. Bastou dar `display:flex` ao aviso de
+ * encaixe e `display:inline-flex` aos botões para o aviso e o botão de
+ * remover o logótipo passarem a estar permanentemente visíveis — sem que
+ * nenhum código tivesse mudado de ideias sobre os esconder.
+ */
+[hidden] {
+  display: none !important;
 }
 
 /* Visível para leitores de ecrã, invisível no ecrã. */
@@ -140,10 +222,9 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(1200px 600px at 100% -10%, var(--primary-soft), transparent 60%), var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-ui);
+  font-family: var(--font-app);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

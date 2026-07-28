@@ -27,7 +27,10 @@ export function createTheme({ storage, button }) {
     }
     if (button) {
       const dark = currentIsDark();
-      button.textContent = dark ? "☀️" : "🌙";
+      // O botão diz em que modo está; qual dos dois ícones se vê é decisão do
+      // CSS. Escrever o ícone daqui obrigava a saber, no JavaScript, como ele
+      // é desenhado — e apagava a marcação do próprio ícone.
+      button.dataset.mode = dark ? "dark" : "light";
       button.title = dark ? "Mudar para modo claro" : "Mudar para modo escuro";
       button.setAttribute("aria-pressed", String(dark));
     }

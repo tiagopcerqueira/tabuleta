@@ -60,11 +60,11 @@ export function createEditorView({ elements, actions }) {
              autocapitalize="sentences" autocomplete="off" spellcheck="false" />
       ${priceField}
       <button class="dish-move" type="button" data-dir="-1" ${index === 0 ? "disabled" : ""}
-              title="Mover para cima" aria-label="Mover ${esc(cfg.label.toLowerCase())} ${index + 1} para cima">▲</button>
+              title="Mover para cima" aria-label="Mover ${esc(cfg.label.toLowerCase())} ${index + 1} para cima"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-up" /></svg></button>
       <button class="dish-move" type="button" data-dir="1" ${index === total - 1 ? "disabled" : ""}
-              title="Mover para baixo" aria-label="Mover ${esc(cfg.label.toLowerCase())} ${index + 1} para baixo">▼</button>
+              title="Mover para baixo" aria-label="Mover ${esc(cfg.label.toLowerCase())} ${index + 1} para baixo"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-down" /></svg></button>
       <button class="dish-remove" type="button"
-              title="Remover ${esc(cfg.label.toLowerCase())}" aria-label="Remover ${esc(cfg.label.toLowerCase())} ${index + 1}">✕</button>
+              title="Remover ${esc(cfg.label.toLowerCase())}" aria-label="Remover ${esc(cfg.label.toLowerCase())} ${index + 1}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close" /></svg></button>
     `;
 
     const nameInput = row.querySelector(".dish-name");
