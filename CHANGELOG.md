@@ -5,6 +5,52 @@ Versões segundo [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [11.2.0] — 2026-07-28
+
+Identidade visual nova para a app. Os menus não mudaram uma linha —
+`menu.css`, `templates.css` e `menu-html.js` estão intactos.
+
+### A ideia
+
+Uma tabuleta é a placa que se pendura à porta. Esta app não é a tabuleta: é
+a bancada onde ela se pinta — e uma bancada não se pinta a si própria.
+
+A interface passa a papel de estirador: quente, mate, sem cor. A única coisa
+com cor no ecrã é a peça que se está a compor, e o quadradinho de cada
+template. Antes a app era azul, e esse azul discutia com o azul do Clássico,
+com o vermelho do Moderno e com o laranja do Fresco: escolher um template era
+escolhê-lo contra um fundo que já tinha opinião. A ação principal passa a ser
+tinta, não cor; o latão aparece uma vez, no foco do teclado.
+
+### Alterado
+
+- **Marca nova**: uma tabuleta pendurada, desenhada a traço, sem caixa nem
+  gradiente. Serve de logótipo na barra e de ícone da app.
+- **Ícones em vez de emojis.** Os emojis traziam cada um a sua paleta e o seu
+  estilo — uma app com doze autores diferentes na mesma barra. Vinte ícones de
+  traço, num sprite SVG, todos a herdar a cor do texto.
+- Tipografia da interface em Archivo (`--font-app`), com o nome em Fraunces.
+- Cartões sem sombra: profundidade só onde há papel a sério — a folha do menu
+  e o modal.
+- Cor da barra do navegador e ícones da PWA a acompanhar.
+
+### Corrigido
+
+- **O atributo `hidden` tinha deixado de esconder.** O aviso de "muitos
+  pratos" e o botão de remover o logótipo estavam permanentemente visíveis:
+  dar `display` a um elemento numa folha de autor vence a regra do navegador
+  que esconde `[hidden]`.
+- **`color-mix()` fora.** Só existe a partir do Chrome 111, e esta app é
+  offline-first para tablets baratos de cozinha, onde a WebView pode ter anos
+  — lá, cada `color-mix()` caía para o valor inicial e o resultado não era uma
+  cor ligeiramente diferente, era uma borda preta onde devia estar um filete.
+  As misturas passam a estar escritas por extenso.
+- Contraste do texto de exemplo dos campos e do modo inativo, ambos abaixo do
+  mínimo AA (2.6:1 e 4.1:1). Todo o texto da interface está agora acima de
+  4.5:1 nos dois modos.
+
+---
+
 ## [11.1.1] — 2026-07-27
 
 ### Corrigido

@@ -69,11 +69,18 @@ export function createMenuView({ elements }) {
     if (previewHint) {
       const what = model.kind === "sobremesas" ? "Pré-visualização das sobremesas" : "Pré-visualização";
       const where =
-        model.format === "story" ? "story 9:16 para Instagram/Facebook 👇" : "folha A4, pronta a imprimir 👇";
+        model.format === "story" ? "story 9:16 para Instagram/Facebook" : "folha A4, pronta a imprimir";
       previewHint.textContent = `${what} — ${where}`;
     }
     if (btnPrint) {
-      btnPrint.textContent = model.format === "story" ? "📤 Partilhar" : "🖨️ Imprimir / PDF";
+      // O rótulo e o ícone mudam juntos, mas por vias diferentes: o texto
+      // escreve-se, o ícone é o CSS que escolhe a partir de data-action. Assim
+      // o botão pode trazer os dois ícones na marcação sem que trocar o rótulo
+      // apague um deles.
+      const story = model.format === "story";
+      btnPrint.dataset.action = story ? "share" : "print";
+      const label = btnPrint.querySelector(".btn__label");
+      if (label) label.textContent = story ? "Partilhar" : "Imprimir / PDF";
     }
   }
 

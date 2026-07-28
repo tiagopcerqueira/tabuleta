@@ -6,8 +6,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#e7edf1",
-  "theme_color": "#14425f",
+  "background_color": "#efece4",
+  "theme_color": "#211f1b",
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
@@ -26,5 +26,5 @@
       "purpose": "maskable"
     }
   ],
-  "version": "11.1.1"
+  "version": "11.2.0"
 }

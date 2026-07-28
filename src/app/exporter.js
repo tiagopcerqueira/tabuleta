@@ -62,10 +62,14 @@ export function createExporter({ elements, getState, toast, modal }) {
       throw new Error("html2canvas indisponível");
     }
 
-    const previousLabel = button?.textContent;
+    // Só o rótulo muda — se se escrevesse no botão inteiro, o ícone que vive
+    // na marcação desaparecia à primeira exportação e não voltava.
+    const label = button?.querySelector(".btn__label");
+    const previousLabel = label?.textContent;
     if (button) {
-      button.textContent = "⏳ A gerar…";
+      if (label) label.textContent = "A gerar…";
       button.disabled = true;
+      button.setAttribute("aria-busy", "true");
     }
 
     const previousScale = el.menuWrap.style.getPropertyValue("--preview-scale");
@@ -75,8 +79,9 @@ export function createExporter({ elements, getState, toast, modal }) {
     const restore = () => {
       if (previousScale) el.menuWrap.style.setProperty("--preview-scale", previousScale);
       if (button) {
-        button.textContent = previousLabel;
+        if (label && previousLabel !== undefined) label.textContent = previousLabel;
         button.disabled = false;
+        button.removeAttribute("aria-busy");
       }
     };
 
